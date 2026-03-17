@@ -1,10 +1,30 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+
+  const {login} = useContext(AuthContext)
+const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
+e.preventDefault();
+
+const userData = {
+  email: email
+};
+
+login(userData)
+
+navigate("/feed")
+  }
   return (
     <div>
+      <h2>Login</h2>
+      <form onSubmit={handleSubmit}></form>
       <input
         type="email"
         placeholder="Enter Your Mail"

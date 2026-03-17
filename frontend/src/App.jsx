@@ -7,6 +7,7 @@ import Feed from "./pages/Feed";
 import Profile from "./pages/Profile";
 import Developers from "./pages/Developers";
 import Navbar from './components/common/Navbar'
+import ProtectedRoute from './components/common/ProtectedRoute'
 
 function App() {
   return (
@@ -23,7 +24,9 @@ function App() {
         <Route path="/register" element={<Register />} />
 
        
-        <Route path="/feed" element={<Feed />} />
+        <Route path="/feed" element={
+          <ProtectedRoute> <Feed /></ProtectedRoute>
+         } />
 
        
         <Route path="/profile/:id" element={<Profile />} />
