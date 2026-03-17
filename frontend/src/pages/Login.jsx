@@ -24,7 +24,7 @@ navigate("/feed")
   return (
     <div>
       <h2>Login</h2>
-      <form onSubmit={handleSubmit}></form>
+      <form onSubmit={handleSubmit}>
       <input
         type="email"
         placeholder="Enter Your Mail"
@@ -41,6 +41,7 @@ navigate("/feed")
         }
       />
       <button>Login</button>
+      </form>
     </div>
   );
 };

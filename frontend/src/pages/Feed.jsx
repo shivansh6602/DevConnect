@@ -1,39 +1,30 @@
-import { useState } from "react";
+import React, { useState } from 'react'
+import CreatePost from '../components/posts/CreatePost'
+import PostList from '../components/posts/PostList'
 
+const Feed = () => {
 
-import CreatePost from "../components/posts/CreatePost";
-import PostList from "../components/posts/PostList";
+  const [posts, setPost] = useState([])
 
-function Feed() {
-
- 
-  const [posts, setPosts] = useState([]);
-
-  function addPost(text) {
-
+  const addPost = (text) => {
     const newPost = {
       id: Date.now(),
       content: text
     };
 
-    setPosts([newPost, ...posts]);
+    setPost([newPost, ...posts]);
 
   }
 
   return (
-
     <div>
+     <h2>Devloper Feed</h2> 
+     
+     <CreatePost addPost={addPost}/>
 
-      <h2>Developer Feed</h2>
-
-      <CreatePost addPost={addPost} />
-
-      
-      <PostList posts={posts} />
-
-    </div>
-
-  );
+     <PostList posts={posts}/>
+     </div>
+  )
 }
 
-export default Feed;
+export default Feed

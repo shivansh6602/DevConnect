@@ -1,20 +1,11 @@
-import Post from "./Post";
+import React from 'react'
 
-function PostList({ posts }) {
-
+const Post = ({post}) => {
   return (
-
-    <div>
-
-      {posts.map((post) => (
-
-        <Post key={post.id} post={post} />
-
-      ))}
-
-    </div>
-
-  );
+       <div style={{border:"1px solid gray", padding:"10px", margin:"10px 0"}}>
+        <p>{post.content}</p>
+       </div>
+  )
 }
 
-export default PostList;
+export default Post
