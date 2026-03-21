@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import CreatePost from '../components/posts/CreatePost'
 import PostList from '../components/posts/PostList'
 
@@ -6,11 +6,15 @@ const Feed = () => {
 
   const [posts, setPost] = useState([])
 
+const {user} = useContext(AuthContext);
+
   const addPost = (text) => {
     const newPost = {
       id: Date.now(),
       content: text,
-      likes: 0
+      likes: 0,
+      user: user?.email || "Guest",
+      time: new Date().toLocaleString()
     };
 
     setPost([newPost, ...posts]);
