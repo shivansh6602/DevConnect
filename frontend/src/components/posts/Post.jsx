@@ -10,13 +10,9 @@ const Post = ({post, deletePost, likePost}) => {
     }}>
 
      
-      <h4>{post.user}</h4>
-
-    
-      <small>{post.time}</small>
-
-     
-      <p>{post.content}</p>
+      <h3>{post.title}</h3>
+<p>{post.content}</p>
+<small>{post.user} • {post.time}</small>
 
     
       <button onClick={() => likePost(post.id)}>

@@ -1,52 +1,61 @@
-import React, { useContext, useState } from 'react'
-import CreatePost from '../components/posts/CreatePost'
-import PostList from '../components/posts/PostList'
+import React, {
+  useContext,
+  useState,
+} from "react";
+import CreatePost from "../components/posts/CreatePost";
+import PostList from "../components/posts/PostList";
+import { AuthContext } from "../context/AuthContext";
 
 const Feed = () => {
+  const [posts, setPosts] = useState([]);
 
-  const [posts, setPost] = useState([])
+  const { user } = useContext(AuthContext);
 
-const {user} = useContext(AuthContext);
-
-  const addPost = (text) => {
+  const addPost = (data) => {
     const newPost = {
       id: Date.now(),
-      content: text,
+      title: data.title,
+      content: data.text,
+
       likes: 0,
       user: user?.email || "Guest",
-      time: new Date().toLocaleString()
+      time: new Date().toLocaleString(),
+      comments: [],
     };
 
-    setPost([newPost, ...posts]);
-
-  }
+    setPosts([newPost, ...posts]);
+  };
 
   const deletePost = (id) => {
-    const updatedPosts = posts.filter((post) => 
-       post.id !== id
-    )
-    setPost(updatedPosts);
-  }
+    const updatedPosts = posts.filter(
+      (post) => post.id !== id,
+    );
+    setPosts(updatedPosts);
+  };
 
-const likePost = (id) => {
-  const updatedPosts = posts.map((post) => {
-    if(post.id === id) {
-      return {...post, likes: post.likes + 1 };
-    }
-    return post;
-  })
-   setPost(updatedPosts);
-}
+  const likePost = (id) => {
+    const updatedPosts = posts.map((post) => {
+      if (post.id === id) {
+        return { ...post, likes: post.likes + 1 };
+      }
+      return post;
+    });
+    setPosts(updatedPosts);
+  };
 
   return (
     <div>
-     <h2>Devloper Feed</h2> 
-     
-     <CreatePost addPost={addPost}/>
+      <h2>Devloper Feed</h2>
 
-     <PostList posts={posts} deletePost={deletePost} likePost={likePost}/>
-     </div>
-  )
-}
+      <CreatePost addPost={addPost} />
 
-export default Feed
+      <PostList
+        posts={posts}
+        deletePost={deletePost}
+        likePost={likePost}
+      />
+    </div>
+  );
+};
+
+export default Feed;
