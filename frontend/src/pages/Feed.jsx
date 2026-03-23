@@ -42,6 +42,24 @@ const Feed = () => {
     });
     setPosts(updatedPosts);
   };
+  
+  const addComment = (postId, text) => {
+ const updatedPosts = posts.map((post) => {
+  if (post.id === postId) {
+    return {
+      ...post,
+      comments: [
+        ...post.comments,{
+          id: Date.now(),
+          text: text
+        }
+      ]
+    }
+  }
+  return post
+ })
+ setPosts(updatedPosts)
+  }
 
   return (
     <div>
@@ -53,6 +71,7 @@ const Feed = () => {
         posts={posts}
         deletePost={deletePost}
         likePost={likePost}
+        addComment={addComment}
       />
     </div>
   );
