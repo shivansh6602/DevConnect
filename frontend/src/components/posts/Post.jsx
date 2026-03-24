@@ -1,6 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 
-const Post = ({post, deletePost, likePost}) => {
+const Post = ({post, deletePost, likePost, addComment}) => {
+
+  const [commentText, setCommentText] = useState("")
+
   return (
 
     <div style={{
@@ -23,6 +26,20 @@ const Post = ({post, deletePost, likePost}) => {
         Delete
       </button>
 
+<hr />
+<h4>Comments:</h4>
+
+{post.comments.map((c)=> (
+  <p key={c.id}>{c.text}</p>
+))}
+<input type="text" placeholder='Write a Comment...' value={commentText} onChange={(e) => setCommentText(e.target.value)} />
+ 
+ <button onClick={() => {
+  addComment(post.id, commentText)
+  setCommentText("")
+ }}>
+  Comment
+ </button>
     </div>
 
   );

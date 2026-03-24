@@ -6,6 +6,7 @@ import CreatePost from "../components/posts/CreatePost";
 import PostList from "../components/posts/PostList";
 import { AuthContext } from "../context/AuthContext";
 
+
 const Feed = () => {
   const [posts, setPosts] = useState([]);
 
@@ -61,6 +62,26 @@ const Feed = () => {
  setPosts(updatedPosts)
   }
 
+ const deleteComment = (postId, commentId) => {
+
+  const updatedPosts = posts.map((post) => {
+
+    if (post.id === postId) {
+
+      return {
+        ...post,
+
+        comments: post.comments.filter(
+          (c) => c.id !== commentId
+        )
+      }
+    }
+
+    return post
+  })
+
+  setPosts(updatedPosts)
+}
   return (
     <div>
       <h2>Devloper Feed</h2>
