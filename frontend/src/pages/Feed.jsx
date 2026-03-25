@@ -93,6 +93,7 @@ const Feed = () => {
         deletePost={deletePost}
         likePost={likePost}
         addComment={addComment}
+        deleteComment={deleteComment}
       />
     </div>
   );

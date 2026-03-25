@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const Post = ({post, deletePost, likePost, addComment}) => {
+const Post = ({post, deletePost, likePost, addComment, deleteComment}) => {
 
   const [commentText, setCommentText] = useState("")
 
@@ -30,7 +30,10 @@ const Post = ({post, deletePost, likePost, addComment}) => {
 <h4>Comments:</h4>
 
 {post.comments.map((c)=> (
+  <div key={c.id}>
   <p key={c.id}>{c.text}</p>
+   <button onClick={() => deleteComment(post.id , c.id)}>Delete</button>
+</div>
 ))}
 <input type="text" placeholder='Write a Comment...' value={commentText} onChange={(e) => setCommentText(e.target.value)} />
  
