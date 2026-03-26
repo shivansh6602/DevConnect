@@ -52,7 +52,8 @@ const Feed = () => {
       comments: [
         ...post.comments,{
           id: Date.now(),
-          text: text
+          text: text,
+          likes: 0
         }
       ]
     }
@@ -82,6 +83,28 @@ const Feed = () => {
 
   setPosts(updatedPosts)
 }
+
+const likeComment = (postId, commentId) =>{
+  const updatedPosts = posts.map((post) => {
+    if(post.id == postId) {
+      return {
+        ...post,
+        comments: post.comments.map((c) => {
+          if(c.id == commentId) {
+            return {
+              ...c,
+              likes: c.likes + 1
+            };
+          }
+          return c;
+        })
+      }
+    }
+    return post;
+  })
+setPosts(updatedPosts)
+}
+
   return (
     <div>
       <h2>Devloper Feed</h2>
@@ -94,6 +117,7 @@ const Feed = () => {
         likePost={likePost}
         addComment={addComment}
         deleteComment={deleteComment}
+        likeComment={likeComment}
       />
     </div>
   );

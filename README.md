@@ -31,8 +31,28 @@ DevConnect
 ├── frontend (React App)
 └── backend (Node.js API)
 
-## Installation
+## DevConnect 🚀
 
-Clone the repo:
+## 📌 Overview
+A developer-focused social platform to connect, share posts, and collaborate.
 
-git clone https://github.com/shivansh6602/DevConnect.git
+## ⚡ Features
+- Authentication & Protected Routes
+- Developer Feed
+- Post Creation & Interaction
+- Scalable Component Architecture
+
+## 🛠 Tech Stack
+- React.js
+- Context API
+- CSS / Tailwind (if used)
+
+## 📂 Folder Structure
+frontend/
+  components/
+  pages/
+  context/
+
+## 🚀 Getting Started
+npm install  
+npm run dev

@@ -6,6 +6,7 @@ const PostList = ({
   likePost,
   addComment,
   deleteComment,
+  likeComment
 }) => {
   return (
     <div>
@@ -17,6 +18,7 @@ const PostList = ({
           likePost={likePost}
           addComment={addComment}
           deleteComment={deleteComment}
+          likeComment={likeComment}
         />
       ))}
     </div>
