@@ -15,6 +15,7 @@ const { user, logout} = useContext(AuthContext)
     <Link to="/">Home</Link>
     <Link to="/developers">Developers</Link>
     <Link to="/feed">Feed</Link>
+    <Link to="/profile">Profile</Link>
     {user ?  (
       <>
       <button onClick={logout}>Logout</button>

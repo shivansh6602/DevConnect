@@ -8,8 +8,20 @@ import Profile from "./pages/Profile";
 import Developers from "./pages/Developers";
 import Navbar from './components/common/Navbar'
 import ProtectedRoute from './components/common/ProtectedRoute'
+import { useState } from "react";
 
 function App() {
+const [posts, setPosts] = useState([])
+
+const [profile, setProfile] = useState({
+  email: "abc@gmail.com", 
+  name: "Shivansh",
+  bio: "React Developer 🚀",
+  github: "https://github.com/",
+  linkedin: "https://linkedin.com/",
+  followers: 120,
+  following: 80
+});
   return (
     <>
      <Navbar />
@@ -25,11 +37,11 @@ function App() {
 
        
         <Route path="/feed" element={
-          <ProtectedRoute> <Feed /></ProtectedRoute>
+          <ProtectedRoute> <Feed posts={posts} setPosts={setPosts} /></ProtectedRoute>
          } />
 
        
-        <Route path="/profile/:id" element={<Profile />} />
+        <Route path="/profile" element={<Profile posts={posts} profile={profile} />} />
 
       
         <Route path="/developers" element={<Developers />} />

@@ -1,25 +1,27 @@
-import React, {
-  useContext,
-  useState,
-} from "react";
+import React, { useContext } from "react";
 import CreatePost from "../components/posts/CreatePost";
 import PostList from "../components/posts/PostList";
 import { AuthContext } from "../context/AuthContext";
 
-
-const Feed = () => {
-  const [posts, setPosts] = useState([]);
+const Feed = ({ posts, setPosts }) => {
 
   const { user } = useContext(AuthContext);
 
+  
   const addPost = (data) => {
     const newPost = {
       id: Date.now(),
       title: data.title,
       content: data.text,
-
       likes: 0,
-      user: user?.email || "Guest",
+
+      
+      user: {
+        email: user?.email || "guest@gmail.com",
+        name: user?.email?.split("@")[0] || "Guest",
+        avatar: `https://i.pravatar.cc/150?u=${user?.email}`
+      },
+
       time: new Date().toLocaleString(),
       comments: [],
     };
@@ -27,87 +29,82 @@ const Feed = () => {
     setPosts([newPost, ...posts]);
   };
 
-  const deletePost = (id) => {
-    const updatedPosts = posts.filter(
-      (post) => post.id !== id,
-    );
-    setPosts(updatedPosts);
-  };
-
-  const likePost = (id) => {
-    const updatedPosts = posts.map((post) => {
-      if (post.id === id) {
-        return { ...post, likes: post.likes + 1 };
-      }
-      return post;
-    });
-    setPosts(updatedPosts);
-  };
   
+  const deletePost = (id) => {
+    setPosts(posts.filter((post) => post.id !== id));
+  };
+
+ 
+  const likePost = (id) => {
+    setPosts(
+      posts.map((post) =>
+        post.id === id
+          ? { ...post, likes: post.likes + 1 }
+          : post
+      )
+    );
+  };
+
+
   const addComment = (postId, text) => {
- const updatedPosts = posts.map((post) => {
-  if (post.id === postId) {
-    return {
-      ...post,
-      comments: [
-        ...post.comments,{
-          id: Date.now(),
-          text: text,
-          likes: 0
-        }
-      ]
-    }
-  }
-  return post
- })
- setPosts(updatedPosts)
-  }
+    if (!text.trim()) return;
 
- const deleteComment = (postId, commentId) => {
+    setPosts(
+      posts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              comments: [
+                ...post.comments,
+                {
+                  id: Date.now(),
+                  text,
+                  likes: 0
+                }
+              ]
+            }
+          : post
+      )
+    );
+  };
 
-  const updatedPosts = posts.map((post) => {
+  
+  const deleteComment = (postId, commentId) => {
+    setPosts(
+      posts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              comments: post.comments.filter(
+                (c) => c.id !== commentId
+              )
+            }
+          : post
+      )
+    );
+  };
 
-    if (post.id === postId) {
 
-      return {
-        ...post,
-
-        comments: post.comments.filter(
-          (c) => c.id !== commentId
-        )
-      }
-    }
-
-    return post
-  })
-
-  setPosts(updatedPosts)
-}
-
-const likeComment = (postId, commentId) =>{
-  const updatedPosts = posts.map((post) => {
-    if(post.id == postId) {
-      return {
-        ...post,
-        comments: post.comments.map((c) => {
-          if(c.id == commentId) {
-            return {
-              ...c,
-              likes: c.likes + 1
-            };
-          }
-          return c;
-        })
-      }
-    }
-    return post;
-  })
-setPosts(updatedPosts)
-}
+  const likeComment = (postId, commentId) => {
+    setPosts(
+      posts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              comments: post.comments.map((c) =>
+                c.id === commentId
+                  ? { ...c, likes: c.likes + 1 }
+                  : c
+              )
+            }
+          : post
+      )
+    );
+  };
 
   return (
     <div>
-      <h2>Devloper Feed</h2>
+      <h2>Developer Feed</h2>
 
       <CreatePost addPost={addPost} />
 
