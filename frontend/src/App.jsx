@@ -1,5 +1,5 @@
+import "./firebase"; // 🔥 THIS LINE FIXES YOUR ERROR
 import { Routes, Route } from "react-router-dom"; // Router components
-
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -8,20 +8,41 @@ import Profile from "./pages/Profile";
 import Developers from "./pages/Developers";
 import Navbar from './components/common/Navbar'
 import ProtectedRoute from './components/common/ProtectedRoute'
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 function App() {
 const [posts, setPosts] = useState([])
+const [user, setUser] = useState(null);
 
 const [profile, setProfile] = useState({
-  email: "abc@gmail.com", 
-  name: "Shivansh",
+  email: "", 
+  name: user?.email?.split("@")[0] || "Guest",
   bio: "React Developer 🚀",
   github: "https://github.com/",
   linkedin: "https://linkedin.com/",
   followers: 120,
   following: 80
 });
+
+const addFollowers = () => {
+  setProfile({
+    ...profile,
+    followers: profile.followers + 1
+  });
+}
+
+useEffect(() => {
+  const auth = getAuth();
+
+  // ✅ Listen user
+  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    setUser(currentUser);
+  });
+
+  return () => unsubscribe();
+}, []);
+
   return (
     <>
      <Navbar />
@@ -41,7 +62,7 @@ const [profile, setProfile] = useState({
          } />
 
        
-        <Route path="/profile" element={<Profile posts={posts} profile={profile} />} />
+        <Route path="/profile" element={<Profile posts={posts} profile={profile}  addFollowers={addFollowers}/>} />
 
       
         <Route path="/developers" element={<Developers />} />

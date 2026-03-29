@@ -1,10 +1,10 @@
-const ProfileHeader = ({ user }) => {
+const ProfileHeader = ({ user, addFollowers }) => {
 
   
   if (!user) return <p>Loading...</p>;
 
 
-  const seed = user.username || user.name || "defaultUser";
+  const seed = user.email || user.name || "defaultUser";
 
   const avatarUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
 

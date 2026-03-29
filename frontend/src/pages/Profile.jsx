@@ -3,7 +3,7 @@ import UserPosts from '../components/profile/UserPosts'
 
 
 
-const Profile = ({ posts, profile }) => {
+const Profile = ({ posts, profile, addFollowers }) => {
 
   const userPosts = posts.filter(
     (post) => post.user.email === profile.email
@@ -11,7 +11,7 @@ const Profile = ({ posts, profile }) => {
 
   return (
     <div>
-      <ProfileHeader user={profile} />
+      <ProfileHeader user={profile} addFollowers={addFollowers} />
       <UserPosts posts={userPosts} />
     </div>
   );

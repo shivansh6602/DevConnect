@@ -1,4 +1,6 @@
-import React, { useContext } from "react";
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "../firebase";
+import { useContext } from "react";
 import CreatePost from "../components/posts/CreatePost";
 import PostList from "../components/posts/PostList";
 import { AuthContext } from "../context/AuthContext";
@@ -8,8 +10,8 @@ const Feed = ({ posts, setPosts }) => {
   const { user } = useContext(AuthContext);
 
   
-  const addPost = (data) => {
-    const newPost = {
+  const addPost = async (data) => {
+  try {  const newPost = {
       id: Date.now(),
       title: data.title,
       content: data.text,
@@ -26,7 +28,11 @@ const Feed = ({ posts, setPosts }) => {
       comments: [],
     };
 
-    setPosts([newPost, ...posts]);
+    await addDoc(collection(db, "posts"), newPost);
+  } catch (error){
+console.log("Error adding post:", error);
+  }
+   
   };
 
   
