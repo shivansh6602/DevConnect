@@ -1,6 +1,6 @@
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "../firebase";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import CreatePost from "../components/posts/CreatePost";
 import PostList from "../components/posts/PostList";
 import { AuthContext } from "../context/AuthContext";
@@ -108,6 +108,25 @@ console.log("Error adding post:", error);
     );
   };
 
+  const fetchPosts = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, "posts"));
+
+      const postsData = snapshot.docs.map((doc) => ({
+id: doc.id,
+...doc.data(),
+      }));
+      setPosts(postsData);
+    } catch (error) {
+      console.log("Error fetching posts:", error);
+      
+    }
+    }
+    useEffect(() => {
+      fetchPosts();
+    }, [])
+  }
+  
   return (
     <div>
       <h2>Developer Feed</h2>
