@@ -126,7 +126,32 @@ id: doc.id,
       fetchPosts();
     }, [])
   }
-  
+ 
+  const deletePost = async (id) => {
+    try {
+      const postRef = doc(db, "posts", id);
+
+      await deleteDoc(postRef);
+      fetchPosts();
+
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
+  }
+
+  const likePOst = async (id, currentLikes) => {
+    try {
+      const postRef = doc(db, "posts", id);
+
+      await updateDoc(postRef, {
+        likes: currentLikes + 1
+      });
+      fetchPosts();
+    } catch (error) {
+      console.error("Error liking post:", error);
+      
+    }
+  }
   return (
     <div>
       <h2>Developer Feed</h2>
