@@ -12,25 +12,23 @@ const Post = ({
   const [commentText, setCommentText] = useState("");
 
   return (
-    <div
-      style={{
-        border: "1px solid gray",
-        padding: "10px",
-        margin: "10px 0",
-      }}
-    >
+  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+  <img
+    src={post.user?.avatar}
+    alt="avatar"
+    width="30"
+    height="30"
+    style={{ borderRadius: "50%" }}
+  />
+  <small>
+    {post.user?.name} • {post.time}
+  </small>
 
-     
-      <h3>{post.title}</h3>
-      <p>{post.content}</p>
-      <small>
-        {post.user} • {post.time}
-      </small>
 
       <br /><br />
 
    
-      <button onClick={() => likePost(post.id)}>
+      <button onClick={() => likePost(post.id, post.likes)}>
         Like ({post.likes})
       </button>
 

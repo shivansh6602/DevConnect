@@ -1,56 +1,96 @@
-import { collection, addDoc } from "firebase/firestore";
+import { 
+  collection, 
+  addDoc, 
+  getDocs, 
+  deleteDoc, 
+  updateDoc, 
+  doc 
+} from "firebase/firestore";
+
 import { db } from "../firebase";
 import { useContext, useEffect } from "react";
 import CreatePost from "../components/posts/CreatePost";
 import PostList from "../components/posts/PostList";
 import { AuthContext } from "../context/AuthContext";
+import { onSnapshot } from "firebase/firestore";
 
 const Feed = ({ posts, setPosts }) => {
 
   const { user } = useContext(AuthContext);
 
-  
+
   const addPost = async (data) => {
-  try {  const newPost = {
-      id: Date.now(),
-      title: data.title,
-      content: data.text,
-      likes: 0,
+    try {
+      const newPost = {
+        title: data.title,
+        content: data.text,
+        likes: 0,
+        user: {
+          email: user?.email || "guest@gmail.com",
+          name: user?.email?.split("@")[0] || "Guest",
+          avatar: `https://i.pravatar.cc/150?u=${user?.email}`
+        },
+        time: new Date().toLocaleString(),
+        comments: [],
+      };
 
-      
-      user: {
-        email: user?.email || "guest@gmail.com",
-        name: user?.email?.split("@")[0] || "Guest",
-        avatar: `https://i.pravatar.cc/150?u=${user?.email}`
-      },
-
-      time: new Date().toLocaleString(),
-      comments: [],
-    };
-
-    await addDoc(collection(db, "posts"), newPost);
-  } catch (error){
-console.log("Error adding post:", error);
-  }
-   
+      await addDoc(collection(db, "posts"), newPost);
+    } catch (error) {
+      console.log("Error adding post:", error);
+    }
   };
 
   
-  const deletePost = (id) => {
-    setPosts(posts.filter((post) => post.id !== id));
+  const fetchPosts = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, "posts"));
+
+      const postsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setPosts(postsData);
+    } catch (error) {
+      console.log("Error fetching posts:", error);
+    }
   };
 
  
-  const likePost = (id) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === id
-          ? { ...post, likes: post.likes + 1 }
-          : post
-      )
-    );
+  const deletePost = async (id) => {
+    try {
+      const postRef = doc(db, "posts", id);
+      await deleteDoc(postRef);
+      
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
   };
 
+
+  const likePost = async (id, currentLikes) => {
+    try {
+      const postRef = doc(db, "posts", id);
+
+      await updateDoc(postRef, {
+        likes: currentLikes + 1
+      });
+
+      
+    } catch (error) {
+      console.error("Error liking post:", error);
+    }
+  };
+ useEffect(() => {
+  const unsubscribe = onSnapshot(collection(db, "posts"), (snapshot) => {
+    const postsData = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setPosts(postsData);
+  });
+  return () => unsubscribe();
+ }, []);
 
   const addComment = (postId, text) => {
     if (!text.trim()) return;
@@ -74,7 +114,6 @@ console.log("Error adding post:", error);
     );
   };
 
-  
   const deleteComment = (postId, commentId) => {
     setPosts(
       posts.map((post) =>
@@ -89,7 +128,6 @@ console.log("Error adding post:", error);
       )
     );
   };
-
 
   const likeComment = (postId, commentId) => {
     setPosts(
@@ -108,50 +146,8 @@ console.log("Error adding post:", error);
     );
   };
 
-  const fetchPosts = async () => {
-    try {
-      const snapshot = await getDocs(collection(db, "posts"));
-
-      const postsData = snapshot.docs.map((doc) => ({
-id: doc.id,
-...doc.data(),
-      }));
-      setPosts(postsData);
-    } catch (error) {
-      console.log("Error fetching posts:", error);
-      
-    }
-    }
-    useEffect(() => {
-      fetchPosts();
-    }, [])
-  }
  
-  const deletePost = async (id) => {
-    try {
-      const postRef = doc(db, "posts", id);
 
-      await deleteDoc(postRef);
-      fetchPosts();
-
-    } catch (error) {
-      console.error("Error deleting post:", error);
-    }
-  }
-
-  const likePOst = async (id, currentLikes) => {
-    try {
-      const postRef = doc(db, "posts", id);
-
-      await updateDoc(postRef, {
-        likes: currentLikes + 1
-      });
-      fetchPosts();
-    } catch (error) {
-      console.error("Error liking post:", error);
-      
-    }
-  }
   return (
     <div>
       <h2>Developer Feed</h2>
@@ -171,3 +167,4 @@ id: doc.id,
 };
 
 export default Feed;
+ 
