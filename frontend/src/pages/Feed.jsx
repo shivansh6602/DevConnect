@@ -1,12 +1,12 @@
-import { 
-  collection, 
-  addDoc, 
-  getDocs, 
-  deleteDoc, 
-  updateDoc, 
-  doc 
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  updateDoc,
+  doc,
 } from "firebase/firestore";
-
+import { increment } from "firebase/firestore";
 import { db } from "../firebase";
 import { useContext, useEffect } from "react";
 import CreatePost from "../components/posts/CreatePost";
@@ -14,10 +14,9 @@ import PostList from "../components/posts/PostList";
 import { AuthContext } from "../context/AuthContext";
 import { onSnapshot } from "firebase/firestore";
 
+
 const Feed = ({ posts, setPosts }) => {
-
   const { user } = useContext(AuthContext);
-
 
   const addPost = async (data) => {
     try {
@@ -27,126 +26,179 @@ const Feed = ({ posts, setPosts }) => {
         likes: 0,
         user: {
           email: user?.email || "guest@gmail.com",
-          name: user?.email?.split("@")[0] || "Guest",
-          avatar: `https://i.pravatar.cc/150?u=${user?.email}`
+          name:
+            user?.email?.split("@")[0] || "Guest",
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Math.random()}`,
         },
         time: new Date().toLocaleString(),
         comments: [],
       };
 
-      await addDoc(collection(db, "posts"), newPost);
+      await addDoc(
+        collection(db, "posts"),
+        newPost,
+      );
     } catch (error) {
       console.log("Error adding post:", error);
     }
+    console.log(data);
   };
 
-  
-  const fetchPosts = async () => {
-    try {
-      const snapshot = await getDocs(collection(db, "posts"));
-
-      const postsData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      setPosts(postsData);
-    } catch (error) {
-      console.log("Error fetching posts:", error);
-    }
-  };
-
- 
   const deletePost = async (id) => {
     try {
       const postRef = doc(db, "posts", id);
       await deleteDoc(postRef);
-      
     } catch (error) {
-      console.error("Error deleting post:", error);
+      console.error(
+        "Error deleting post:",
+        error,
+      );
     }
   };
-
 
   const likePost = async (id, currentLikes) => {
     try {
       const postRef = doc(db, "posts", id);
 
       await updateDoc(postRef, {
-        likes: currentLikes + 1
+        likes: increment(1),
       });
-
-      
     } catch (error) {
       console.error("Error liking post:", error);
     }
   };
- useEffect(() => {
-  const unsubscribe = onSnapshot(collection(db, "posts"), (snapshot) => {
-    const postsData = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setPosts(postsData);
-  });
-  return () => unsubscribe();
- }, []);
 
-  const addComment = (postId, text) => {
+  const addComment = async (postId, text) => {
     if (!text.trim()) return;
 
-    setPosts(
-      posts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              comments: [
-                ...post.comments,
-                {
-                  id: Date.now(),
-                  text,
-                  likes: 0
-                }
-              ]
-            }
-          : post
-      )
-    );
+    try {
+      const commentRef = collection(
+        db,
+        "posts",
+        postId,
+        "comments",
+      );
+
+      await addDoc(commentRef, {
+        text,
+        likes: increment(1),
+        createdAt: new Date(),
+        user: {
+          name: user?.email?.split("@")[0] || "Guest",
+          email: user?.email,
+           avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`,
+        }
+      });
+    } catch (error) {
+      console.log("Error adding comment:", error);
+    }
   };
 
-  const deleteComment = (postId, commentId) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              comments: post.comments.filter(
-                (c) => c.id !== commentId
-              )
-            }
-          : post
-      )
-    );
+  const deleteComment = async (
+    postId,
+    commentId,
+  ) => {
+    try {
+      const commentRef = doc(
+        db,
+        "posts",
+        postId,
+        "comments",
+        commentId,
+      );
+      await deleteDoc(commentRef);
+    } catch (error) {
+      console.log("Error deleting", error);
+    }
   };
 
-  const likeComment = (postId, commentId) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              comments: post.comments.map((c) =>
-                c.id === commentId
-                  ? { ...c, likes: c.likes + 1 }
-                  : c
-              )
-            }
-          : post
-      )
-    );
+  const likeComment = async (
+    postId,
+    commentId,
+  ) => {
+    try {
+      const commentRef = doc(
+        db,
+        "posts",
+        postId,
+        "comments",
+        commentId,
+      );
+
+     
+      const snapshot = await getDocs(
+        collection(
+          db,
+          "posts",
+          postId,
+          "comments",
+        ),
+      );
+
+      const commentDoc = snapshot.docs.find(
+        (d) => d.id === commentId,
+      );
+
+      if (!commentDoc) return;
+
+      const currentLikes =
+        commentDoc.data().likes || 0;
+
+      await updateDoc(commentRef, {
+        likes: currentLikes + 1,
+      });
+    } catch (error) {
+      console.log("Error liking comment:", error);
+    }
   };
 
- 
+
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, "posts"),
+      (snapshot) => {
+        snapshot.docs.forEach((docSnap) => {
+          const postId = docSnap.id;
+
+          onSnapshot(
+            collection(
+              db,
+              "posts",
+              postId,
+              "comments",
+            ),
+            (commentSnap) => {
+              const comments =
+                commentSnap.docs.map((c) => ({
+                  id: c.id,
+                  ...c.data(),
+                }));
+
+              setPosts((prevPosts) =>
+                prevPosts.map((p) =>
+                  p.id === postId
+                    ? { ...p, comments }
+                    : p,
+                ),
+              );
+            },
+          );
+        });
+
+        const postsData = snapshot.docs.map(
+          (doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }),
+        );
+
+        setPosts(postsData);
+      },
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   return (
     <div>
@@ -167,4 +219,3 @@ const Feed = ({ posts, setPosts }) => {
 };
 
 export default Feed;
- 

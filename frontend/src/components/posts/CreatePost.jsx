@@ -1,34 +1,26 @@
-import React, { useState } from 'react'
+import React, { useState } from "react";
 
-const CreatePost = ({addPost}) => {
+const CreatePost = ({ addPost }) => {
+  const [title, setTitle] = useState("");
 
-const [title, setTitle] = useState("");
-
-  
   const [text, setText] = useState("");
 
   function handleSubmit(e) {
-
     e.preventDefault();
 
-    
     if (!title || !text) {
       alert("All fields are required");
       return;
     }
 
-  
     addPost({ title, text });
 
-    
     setTitle("");
     setText("");
   }
 
   return (
-
     <form onSubmit={handleSubmit}>
-
       <input
         type="text"
         placeholder="Post Title"
@@ -36,7 +28,8 @@ const [title, setTitle] = useState("");
         onChange={(e) => setTitle(e.target.value)}
       />
 
-      <br /><br />
+      <br />
+      <br />
 
       <textarea
         placeholder="Write your thoughts..."
@@ -47,9 +40,8 @@ const [title, setTitle] = useState("");
       <br />
 
       <button>Create Post</button>
-
     </form>
   );
-}
+};
 
 export default CreatePost;
