@@ -2,6 +2,7 @@ import {
   collection,
   addDoc,
   getDocs,
+  getDoc,
   deleteDoc,
   updateDoc,
   doc,
@@ -24,6 +25,7 @@ const Feed = ({ posts, setPosts }) => {
         title: data.title,
         content: data.text,
         likes: 0,
+        likedBy: [],
         user: {
           email: user?.email || "guest@gmail.com",
           name:
@@ -59,11 +61,20 @@ const Feed = ({ posts, setPosts }) => {
   const likePost = async (id, currentLikes) => {
     try {
       const postRef = doc(db, "posts", id);
+const snapshot = await getDocs(collection(db, "posts"));
+const postDoc = snapshot.docs.find((d) => d.id === id);
 
-      await updateDoc(postRef, {
-        likes: increment(1),
-      });
-    } catch (error) {
+if (!postDoc) return;
+const data = postDoc.data();
+if (data.likedBy?.includes(user.email)) {
+  console.log("Already Liked");
+  return;
+}
+await updateDoc(postRef, {
+  likes: increment(1),
+  likedBy: [...(data.likedBy || []), user.email],
+});
+   }   catch (error) {
       console.error("Error liking post:", error);
     }
   };
@@ -81,7 +92,8 @@ const Feed = ({ posts, setPosts }) => {
 
       await addDoc(commentRef, {
         text,
-        likes: increment(1),
+        likes: 0,
+        likedBy: [],
         createdAt: new Date(),
         user: {
           name: user?.email?.split("@")[0] || "Guest",
@@ -112,45 +124,33 @@ const Feed = ({ posts, setPosts }) => {
     }
   };
 
-  const likeComment = async (
-    postId,
-    commentId,
-  ) => {
-    try {
-      const commentRef = doc(
-        db,
-        "posts",
-        postId,
-        "comments",
-        commentId,
-      );
+ const likeComment = async (postId, commentId) => {
+  try {
+    const commentRef = doc(
+      db,
+      "posts",
+      postId,
+      "comments",
+      commentId
+    );
 
-     
-      const snapshot = await getDocs(
-        collection(
-          db,
-          "posts",
-          postId,
-          "comments",
-        ),
-      );
+    const commentSnap = await getDoc(commentRef);
+    const data = commentSnap.data();
 
-      const commentDoc = snapshot.docs.find(
-        (d) => d.id === commentId,
-      );
-
-      if (!commentDoc) return;
-
-      const currentLikes =
-        commentDoc.data().likes || 0;
-
-      await updateDoc(commentRef, {
-        likes: currentLikes + 1,
-      });
-    } catch (error) {
-      console.log("Error liking comment:", error);
+    if (data.likedBy?.includes(user.email)) {
+      console.log("Already liked comment");
+      return;
     }
-  };
+
+    await updateDoc(commentRef, {
+      likes: increment(1),
+      likedBy: [...(data.likedBy || []), user.email],
+    });
+
+  } catch (error) {
+    console.log("Error liking comment:", error);
+  }
+};
 
 
 

@@ -13,6 +13,7 @@ const { user, logout} = useContext(AuthContext)
 <h2>DevConnect</h2>
 <div>
     <Link to="/">Home</Link>
+    <Link to="/chat">Chat</Link>
     <Link to="/developers">Developers</Link>
     <Link to="/feed">Feed</Link>
     <Link to="/profile">Profile</Link>

@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 const Post = ({
   post,
   deletePost,
@@ -10,7 +12,7 @@ const Post = ({
 }) => {
 
   const [commentText, setCommentText] = useState("");
-
+const { user } = useContext(AuthContext);
   return (
   <div
   style={{
@@ -74,9 +76,11 @@ const Post = ({
           Like ({c.likes})
         </button>
 
+{post.user?.email === user?.email && (
         <button onClick={() => deleteComment(post.id, c.id)}>
           Delete
         </button>
+)}
       </div>
 
     </div>
