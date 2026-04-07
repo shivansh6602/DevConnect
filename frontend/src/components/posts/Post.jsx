@@ -31,8 +31,11 @@ const { user } = useContext(AuthContext);
       style={{ borderRadius: "50%" }}
     />
     <small>
-      {post.user?.name} • {formatDistanceToNow(new Date(post.time), { addSuffix: true })}
-    </small>
+  {post.user?.name} •{" "}
+  {post.createdAt
+    ? formatDistanceToNow(post.createdAt.toDate(), { addSuffix: true })
+    : "Just now"}
+</small>
   </div>
 
  

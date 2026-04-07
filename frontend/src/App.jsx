@@ -10,63 +10,69 @@ import ProtectedRoute from './components/common/ProtectedRoute'
 import { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import Chat from './pages/Chat';
-
+import { useContext } from "react";
+import { AuthContext } from "./context/AuthContext";
+import Register from './pages/Register'
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "./firebase";
 
 function App() {
   const [posts, setPosts] = useState([]);
-  const [user, setUser] = useState(null);
 
   // ✅ Profile state (EMPTY INIT)
   const [profile, setProfile] = useState(null);
+const { user } = useContext(AuthContext);
 
-  // 🧠 1. AUTH LISTENER (runs once)
-  useEffect(() => {
-    const auth = getAuth();
+useEffect(() => {
+  const setupUserProfile = async () => {
+    if (!user) return;
 
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
+    const userRef = doc(db, "users", user.uid);
+    let snap = await getDoc(userRef);
 
-      if (currentUser) {
-        const userRef = doc(db, "users", currentUser.email);
+    // ✅ IF NEW STRUCTURE EXISTS → use it
+    if (snap.exists()) {
+      setProfile(snap.data());
+      return;
+    }
 
-        const userSnap = await getDoc(userRef);
+    // 🔥 CHECK OLD STRUCTURE (email-based)
+    const oldRef = doc(db, "users", user.email);
+    const oldSnap = await getDoc(oldRef);
 
-        // 🔥 Create user if not exists
-        if (!userSnap.exists()) {
-          await setDoc(userRef, {
-            email: currentUser.email,
-            name: currentUser.email.split("@")[0],
-            avatar: `https://i.pravatar.cc/150?u=${currentUser.email}`,
-            bio: "New Developer 🚀",
-            github: "",
-            linkedin: "",
-            followers: 0,
-            following: 0
-          });
-        }
-      }
-    });
+    if (oldSnap.exists()) {
+      console.log("Migrating old user...");
 
-    return () => unsubscribe(); // cleanup
-  }, []);
+      // ✅ COPY old data to new uid doc
+      await setDoc(userRef, oldSnap.data());
 
-  // 🧠 2. FETCH PROFILE (runs when user changes)
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
+      // ❌ optional: delete old doc
+      // await deleteDoc(oldRef);
 
-      const userRef = doc(db, "users", user.email);
-      const snap = await getDoc(userRef);
+      const newSnap = await getDoc(userRef);
+      setProfile(newSnap.data());
+    } else {
+      // ✅ completely new user
+      console.log("Creating new user...");
 
-      if (snap.exists()) {
-        setProfile(snap.data());
-      }
-    };
+      await setDoc(userRef, {
+        email: user.email,
+        name: user.displayName || user.email.split("@")[0],
+        avatar: `https://i.pravatar.cc/150?u=${user.email}`,
+        bio: "New Developer 🚀",
+        github: "",
+        linkedin: "",
+        followers: 0,
+        following: 0,
+      });
 
-    fetchProfile();
-  }, [user]);
+      const newSnap = await getDoc(userRef);
+      setProfile(newSnap.data());
+    }
+  };
+
+  setupUserProfile();
+}, [user]);
 
   return (
     <>
@@ -106,7 +112,9 @@ function App() {
         />
 
         <Route path="/developers" element={<Developers />} />
+         <Route path="/register" element={<Register />} />
       </Routes>
+     
     </>
   );
 }

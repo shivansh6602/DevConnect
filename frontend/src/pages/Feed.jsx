@@ -19,32 +19,28 @@ import { onSnapshot } from "firebase/firestore";
 const Feed = ({ posts, setPosts }) => {
   const { user } = useContext(AuthContext);
 
-  const addPost = async (data) => {
-    try {
-      const newPost = {
-        title: data.title,
-        content: data.text,
-        likes: 0,
-        likedBy: [],
-        user: {
-          email: user?.email || "guest@gmail.com",
-          name:
-            user?.email?.split("@")[0] || "Guest",
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Math.random()}`,
-        },
-        time: new Date().toLocaleString(),
-        comments: [],
-      };
+const addPost = async (data) => {
+  try {
+    const newPost = {
+      title: data.title,
+      content: data.text,
+      likes: 0,
+      likedBy: [],
+      userId: user.uid, // ✅ IMPORTANT
+      user: {
+        email: user.email,
+        name: user.email.split("@")[0],
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+      },
+      createdAt: new Date(), // ✅ better than string
+    };
 
-      await addDoc(
-        collection(db, "posts"),
-        newPost,
-      );
-    } catch (error) {
-      console.log("Error adding post:", error);
-    }
-    console.log(data);
-  };
+    await addDoc(collection(db, "posts"), newPost);
+
+  } catch (error) {
+    console.log("Error adding post:", error);
+  }
+};
 
   const deletePost = async (id) => {
     try {
@@ -58,26 +54,26 @@ const Feed = ({ posts, setPosts }) => {
     }
   };
 
-  const likePost = async (id, currentLikes) => {
-    try {
-      const postRef = doc(db, "posts", id);
-const snapshot = await getDocs(collection(db, "posts"));
-const postDoc = snapshot.docs.find((d) => d.id === id);
+const likePost = async (id) => {
+  try {
+    const postRef = doc(db, "posts", id);
+    const postSnap = await getDoc(postRef);
+    const data = postSnap.data();
 
-if (!postDoc) return;
-const data = postDoc.data();
-if (data.likedBy?.includes(user.email)) {
-  console.log("Already Liked");
-  return;
-}
-await updateDoc(postRef, {
-  likes: increment(1),
-  likedBy: [...(data.likedBy || []), user.email],
-});
-   }   catch (error) {
-      console.error("Error liking post:", error);
+    if (data.likedBy?.includes(user.uid)) {
+      console.log("Already Liked");
+      return;
     }
-  };
+
+    await updateDoc(postRef, {
+      likes: increment(1),
+      likedBy: [...(data.likedBy || []), user.uid],
+    });
+
+  } catch (error) {
+    console.error("Error liking post:", error);
+  }
+};
 
   const addComment = async (postId, text) => {
     if (!text.trim()) return;
@@ -95,11 +91,12 @@ await updateDoc(postRef, {
         likes: 0,
         likedBy: [],
         createdAt: new Date(),
-        user: {
-          name: user?.email?.split("@")[0] || "Guest",
-          email: user?.email,
-           avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`,
-        }
+      user: {
+  name: user.email.split("@")[0],
+  email: user.email,
+  avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+  userId: user.uid // ✅ ADD THIS
+}
       });
     } catch (error) {
       console.log("Error adding comment:", error);
@@ -137,14 +134,14 @@ await updateDoc(postRef, {
     const commentSnap = await getDoc(commentRef);
     const data = commentSnap.data();
 
-    if (data.likedBy?.includes(user.email)) {
+    if (data.likedBy?.includes(user.uid)) {
       console.log("Already liked comment");
       return;
     }
 
     await updateDoc(commentRef, {
       likes: increment(1),
-      likedBy: [...(data.likedBy || []), user.email],
+      likedBy: [...(data.likedBy || []), user.uid],
     });
 
   } catch (error) {
@@ -154,52 +151,56 @@ await updateDoc(postRef, {
 
 
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(
-      collection(db, "posts"),
-      (snapshot) => {
-        snapshot.docs.forEach((docSnap) => {
-          const postId = docSnap.id;
+ useEffect(() => {
+  if (!user) return;
 
-          onSnapshot(
-            collection(
-              db,
-              "posts",
-              postId,
-              "comments",
-            ),
-            (commentSnap) => {
-              const comments =
-                commentSnap.docs.map((c) => ({
-                  id: c.id,
-                  ...c.data(),
-                }));
+  console.log("Current User:", user.uid);
 
-              setPosts((prevPosts) =>
-                prevPosts.map((p) =>
-                  p.id === postId
-                    ? { ...p, comments }
-                    : p,
-                ),
-              );
-            },
-          );
-        });
+  // 🔥 clear previous posts
+  setPosts([]);
 
-        const postsData = snapshot.docs.map(
-          (doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }),
-        );
+  const unsubscribe = onSnapshot(collection(db, "posts"), (snapshot) => {
 
-        setPosts(postsData);
-      },
+    let postsData = snapshot.docs.map((docSnap) => ({
+      id: docSnap.id,
+      ...docSnap.data(),
+      comments: [],
+    }));
+
+    // ✅ VERY IMPORTANT: FILTER BY USER
+    postsData = postsData.filter(
+      (post) => post.userId === user.uid
     );
 
-    return () => unsubscribe();
-  }, []);
+    console.log("Filtered Posts:", postsData);
 
+    setPosts(postsData);
+
+    // 🔥 load comments only for filtered posts
+    postsData.forEach((post) => {
+      onSnapshot(
+        collection(db, "posts", post.id, "comments"),
+        (commentSnap) => {
+          const comments = commentSnap.docs.map((c) => ({
+            id: c.id,
+            ...c.data(),
+          }));
+
+          setPosts((prev) =>
+            prev.map((p) =>
+              p.id === post.id ? { ...p, comments } : p
+            )
+          );
+        }
+      );
+    });
+
+  });
+
+  return () => unsubscribe();
+}, [user]); // ✅ DEPENDENCY ADDED
+
+   
   return (
     <div>
       <h2>Developer Feed</h2>
