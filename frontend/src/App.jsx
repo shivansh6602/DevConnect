@@ -58,7 +58,7 @@ useEffect(() => {
         email: user.email,
         name: user.displayName || user.email.split("@")[0],
         avatar: `https://i.pravatar.cc/150?u=${user.email}`,
-        bio: "New Developer 🚀",
+        bio: "New Developer I'm🚀",
         github: "",
         linkedin: "",
         followers: 0,
