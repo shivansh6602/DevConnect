@@ -19,7 +19,7 @@ import { db } from "./firebase";
 function App() {
   const [posts, setPosts] = useState([]);
 
-  // ✅ Profile state (EMPTY INIT)
+ 
   const [profile, setProfile] = useState(null);
 const { user } = useContext(AuthContext);
 
@@ -30,29 +30,28 @@ useEffect(() => {
     const userRef = doc(db, "users", user.uid);
     let snap = await getDoc(userRef);
 
-    // ✅ IF NEW STRUCTURE EXISTS → use it
+
     if (snap.exists()) {
       setProfile(snap.data());
       return;
     }
 
-    // 🔥 CHECK OLD STRUCTURE (email-based)
+    
     const oldRef = doc(db, "users", user.email);
     const oldSnap = await getDoc(oldRef);
 
     if (oldSnap.exists()) {
       console.log("Migrating old user...");
 
-      // ✅ COPY old data to new uid doc
+      
       await setDoc(userRef, oldSnap.data());
 
-      // ❌ optional: delete old doc
-      // await deleteDoc(oldRef);
+      
 
       const newSnap = await getDoc(userRef);
       setProfile(newSnap.data());
     } else {
-      // ✅ completely new user
+    
       console.log("Creating new user...");
 
       await setDoc(userRef, {
@@ -95,21 +94,27 @@ useEffect(() => {
         <Route path="/chat/:email" element={<Chat />} />
 
       
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-           { profile ? (
-              <Profile
-                posts={posts}
-                profile={profile}
-              /> ) : (
-                <h2>Loading Profile...</h2>
-              
-            )}
-            </ProtectedRoute>
-          }
-        />
+      <Route
+  path="/profile"
+  element={
+    <ProtectedRoute>
+      {profile ? (
+        <Profile posts={posts} profile={profile} />
+      ) : (
+        <h2>Loading Profile...</h2>
+      )}
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/profile/:id"
+  element={
+    <ProtectedRoute>
+     <Profile posts={posts} profile={profile} />
+    </ProtectedRoute>
+  }
+/>
 
         <Route path="/developers" element={<Developers />} />
          <Route path="/register" element={<Register />} />

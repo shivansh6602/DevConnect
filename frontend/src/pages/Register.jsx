@@ -10,34 +10,54 @@ const Register = () => {
 
   const auth = getAuth();
 
-  const handleRegister = async () => {
-    try {
-      const userCred = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+ const handleRegister = async () => {
 
-      const user = userCred.user;
+  // ✅ Basic validation
+  if (!name || !email || !password) {
+    alert("All fields are required");
+    return;
+  }
 
-      // ✅ Save user profile in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        name: name,
-        email: email,
-        avatar: `https://i.pravatar.cc/150?u=${email}`,
-        bio: "New Developer 🚀",
-        github: "",
-        linkedin: "",
-        followers: 0,
-        following: 0,
-      });
+  if (password.length < 6) {
+    alert("Password must be at least 6 characters");
+    return;
+  }
 
-      console.log("User Created + Profile Saved");
+  try {
+    const userCred = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-    } catch (error) {
-      console.log("Signup Error:", error.message);
+    const user = userCred.user;
+
+    await setDoc(doc(db, "users", user.uid), {
+      name: name,
+      email: email,
+      avatar: `https://i.pravatar.cc/150?u=${email}`,
+      bio: "New Developer 🚀",
+      github: "",
+      linkedin: "",
+      followers: 0,
+      following: 0,
+    });
+
+    console.log("User Created + Profile Saved");
+
+  } catch (error) {
+    console.log("Signup Error:", error.message);
+
+    // ✅ Better error handling
+    if (error.code === "auth/email-already-in-use") {
+      alert("Email already registered");
+    } else if (error.code === "auth/invalid-email") {
+      alert("Invalid email format");
+    } else {
+      alert(error.message);
     }
-  };
+  }
+};
 
   return (
     <div>

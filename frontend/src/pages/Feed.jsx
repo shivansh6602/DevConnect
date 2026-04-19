@@ -162,19 +162,12 @@ const likePost = async (id) => {
   const unsubscribe = onSnapshot(collection(db, "posts"), (snapshot) => {
 
     let postsData = snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
-      ...docSnap.data(),
-      comments: [],
-    }));
+  id: docSnap.id,
+  ...docSnap.data(),
+  comments: [],
+}));
 
-    // ✅ VERY IMPORTANT: FILTER BY USER
-    postsData = postsData.filter(
-      (post) => post.userId === user.uid
-    );
-
-    console.log("Filtered Posts:", postsData);
-
-    setPosts(postsData);
+setPosts(postsData);
 
     // 🔥 load comments only for filtered posts
     postsData.forEach((post) => {

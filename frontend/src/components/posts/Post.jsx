@@ -79,7 +79,7 @@ const { user } = useContext(AuthContext);
           Like ({c.likes})
         </button>
 
-{post.user?.email === user?.email && (
+{post.userId === user.uid && (
         <button onClick={() => deleteComment(post.id, c.id)}>
           Delete
         </button>
