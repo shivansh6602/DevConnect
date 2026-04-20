@@ -15,6 +15,7 @@ import { AuthContext } from "./context/AuthContext";
 import Register from './pages/Register'
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "./firebase";
+import ChatBox from './components/chat/ChatBox'
 
 function App() {
   const [posts, setPosts] = useState([]);
@@ -78,47 +79,52 @@ useEffect(() => {
       <Navbar />
 
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
+  <Route path="/" element={<Home />} />
+  <Route path="/login" element={<Login />} />
 
-        <Route
-          path="/feed"
-          element={
-            <ProtectedRoute>
-              <Feed posts={posts} setPosts={setPosts} />
-            </ProtectedRoute>
-          }
-        />
+  <Route
+    path="/feed"
+    element={
+      <ProtectedRoute>
+        <Feed posts={posts} setPosts={setPosts} />
+      </ProtectedRoute>
+    }
+  />
 
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/chat/:email" element={<Chat />} />
+  <Route
+    path="/chat/:id"
+    element={
+      <ProtectedRoute>
+        <Chat />
+      </ProtectedRoute>
+    }
+  />
 
-      
-      <Route
-  path="/profile"
-  element={
-    <ProtectedRoute>
-      {profile ? (
+  <Route
+    path="/profile"
+    element={
+      <ProtectedRoute>
+        {profile ? (
+          <Profile posts={posts} profile={profile} />
+        ) : (
+          <h2>Loading Profile...</h2>
+        )}
+      </ProtectedRoute>
+    }
+  />
+
+  <Route
+    path="/profile/:id"
+    element={
+      <ProtectedRoute>
         <Profile posts={posts} profile={profile} />
-      ) : (
-        <h2>Loading Profile...</h2>
-      )}
-    </ProtectedRoute>
-  }
-/>
+      </ProtectedRoute>
+    }
+  />
 
-<Route
-  path="/profile/:id"
-  element={
-    <ProtectedRoute>
-     <Profile posts={posts} profile={profile} />
-    </ProtectedRoute>
-  }
-/>
-
-        <Route path="/developers" element={<Developers />} />
-         <Route path="/register" element={<Register />} />
-      </Routes>
+  <Route path="/developers" element={<Developers />} />
+  <Route path="/register" element={<Register />} />
+</Routes>
      
     </>
   );

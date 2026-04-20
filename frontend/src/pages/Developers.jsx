@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 const Developers = () => {
   const [users, setUsers] = useState([]);
@@ -23,6 +25,7 @@ const Developers = () => {
   }, []);
   const navigate = useNavigate();
 
+  const { user: currentUser } = useContext(AuthContext)
   return (
     <div>
       <h2>Developers</h2>
@@ -45,8 +48,14 @@ const Developers = () => {
 <button onClick={() => navigate(`/profile/${user.id}`)}>
   View Profile
 </button>
+{user.id !== currentUser.uid && (
+<button onClick={() => navigate(`/chat/${user.id}`)}>
+  Start Chat
+</button>
+)}
           <h3>{user.name}</h3>
           <p>{user.bio}</p>
+          
         </div>
       ))}
     </div>
