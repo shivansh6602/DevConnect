@@ -7,7 +7,7 @@ import { AuthContext } from "../context/AuthContext";
 
 const Developers = () => {
   const [users, setUsers] = useState([]);
-
+const { user: currentUser } = useContext(AuthContext)
   useEffect(() => {
   
     const fetchUsers = async () => {
@@ -23,9 +23,12 @@ const Developers = () => {
 
     fetchUsers();
   }, []);
+   if (!currentUser) {
+    return <h2>Loading user...</h2>;
+  }
   const navigate = useNavigate();
 
-  const { user: currentUser } = useContext(AuthContext)
+  
   return (
     <div>
       <h2>Developers</h2>

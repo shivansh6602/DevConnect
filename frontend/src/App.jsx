@@ -16,6 +16,7 @@ import Register from './pages/Register'
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import ChatBox from './components/chat/ChatBox'
+import ChatList from "./pages/ChatList";
 
 function App() {
   const [posts, setPosts] = useState([]);
@@ -87,6 +88,15 @@ useEffect(() => {
     element={
       <ProtectedRoute>
         <Feed posts={posts} setPosts={setPosts} />
+      </ProtectedRoute>
+    }
+  />
+
+ <Route
+    path="/chat"
+    element={
+      <ProtectedRoute>
+        <ChatList />
       </ProtectedRoute>
     }
   />
