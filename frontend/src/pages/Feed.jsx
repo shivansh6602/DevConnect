@@ -16,23 +16,36 @@ import { AuthContext } from "../context/AuthContext";
 import { onSnapshot } from "firebase/firestore";
 
 
+
 const Feed = ({ posts, setPosts }) => {
   const { user } = useContext(AuthContext);
 
 const addPost = async (data) => {
   try {
+    // 🔥 get user profile from Firestore
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    const userData = userDoc.data();
+
+    if (!userData) {
+      console.log("User data not found");
+      return;
+    }
+
     const newPost = {
       title: data.title,
       content: data.text,
       likes: 0,
       likedBy: [],
-      userId: user.uid, // ✅ IMPORTANT
+      userId: user.uid,
+
       user: {
-        email: user.email,
-        name: user.email.split("@")[0],
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+        name: userData.name,
+        email: userData.email,
+        avatar: userData.avatar, // ✅ SAME avatar everywhere
+        userId: user.uid,
       },
-      createdAt: new Date(), // ✅ better than string
+
+      createdAt: new Date(),
     };
 
     await addDoc(collection(db, "posts"), newPost);
@@ -75,33 +88,34 @@ const likePost = async (id) => {
   }
 };
 
-  const addComment = async (postId, text) => {
-    if (!text.trim()) return;
+ const addComment = async (postId, text) => {
+  if (!text.trim()) return;
 
-    try {
-      const commentRef = collection(
-        db,
-        "posts",
-        postId,
-        "comments",
-      );
+  try {
+    const commentRef = collection(db, "posts", postId, "comments");
 
-      await addDoc(commentRef, {
-        text,
-        likes: 0,
-        likedBy: [],
-        createdAt: new Date(),
+    // 🔥 fetch user profile
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    const userData = userDoc.data();
+
+    await addDoc(commentRef, {
+      text,
+      likes: 0,
+      likedBy: [],
+      createdAt: new Date(),
+
       user: {
-  name: user.email.split("@")[0],
-  email: user.email,
-  avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
-  userId: user.uid // ✅ ADD THIS
-}
-      });
-    } catch (error) {
-      console.log("Error adding comment:", error);
-    }
-  };
+        name: userData.name,
+        email: userData.email,
+        avatar: userData.avatar, // ✅ FIXED
+        userId: user.uid,
+      },
+    });
+
+  } catch (error) {
+    console.log("Error adding comment:", error);
+  }
+};
 
   const deleteComment = async (
     postId,

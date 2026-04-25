@@ -1,47 +1,65 @@
-import { useContext } from 'react';
-import ProfileHeader from '../components/profile/ProfileHeader'
-import UserPosts from '../components/profile/UserPosts'
-import { AuthContext } from '../context/AuthContext';
+import { useContext, useEffect, useState } from "react";
+import ProfileHeader from "../components/profile/ProfileHeader";
+import UserPosts from "../components/profile/UserPosts";
+import { AuthContext } from "../context/AuthContext";
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
+const Profile = ({ posts }) => {
+  const { user } = useContext(AuthContext); 
+  // 🔥 Logged-in user from Firebase Auth
 
-const Profile = ({ posts, profile }) => {
-  const { user } = useContext(AuthContext);
-  const { id } = useParams();
+  const { id } = useParams(); 
+  // 🔥 If visiting another profile → /profile/:id
 
-  const [profileData, setProfileData] = useState(profile);
+  const [profileData, setProfileData] = useState(null); 
+  // 🔥 This will store Firestore user data
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
-      if (!id) return;
+      try {
+        // 🔥 If no id → load current user profile
+        const uid = id || user?.uid;
 
-      const userRef = doc(db, "users", id);
-      const snap = await getDoc(userRef);
+        if (!uid) return;
 
-      if (snap.exists()) {
-        setProfileData(snap.data());
+        const userRef = doc(db, "users", uid); // 🔥 Firestore reference
+        const snap = await getDoc(userRef);
+
+        if (snap.exists()) {
+          setProfileData(snap.data()); // ✅ Set profile data
+        } else {
+          console.log("User not found");
+        }
+      } catch (error) {
+        console.log("Error fetching user:", error);
       }
+
+      setLoading(false);
     };
 
     fetchUser();
-  }, [id]);
+  }, [id, user]);
 
-  // 🔥 KEY LOGIC
-  const userPosts = posts.filter(
-    (post) => post.userId === (id || user.uid)
+  // 🔥 Filter posts of that user
+  const userPosts = posts?.filter(
+    (post) => post.userId === (id || user?.uid)
   );
 
-  if (!profileData) return <p>Loading...</p>;
+  if (loading) return <p>Loading profile...</p>;
 
   return (
     <div>
-      <ProfileHeader user={profileData} />
+   <ProfileHeader 
+  user={profileData} 
+  userId={id || user.uid} 
+/>
       <UserPosts posts={userPosts} />
     </div>
   );
 };
 
-export default Profile
+export default Profile;
