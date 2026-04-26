@@ -1,4 +1,12 @@
-import "./firebase";
+import { db } from "./firebase";
+import {
+  doc,
+  updateDoc,
+    getDoc,   
+  deleteDoc,
+  arrayUnion,
+  arrayRemove,
+} from "firebase/firestore";
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -11,11 +19,11 @@ import Chat from "./pages/Chat";
 import Register from "./pages/Register";
 import ChatList from "./pages/ChatList";
 import EditProfile from "./pages/EditProfile";
+import { increment } from "firebase/firestore";
 
 import { useState } from "react";
 
 function App() {
-  // 🔥 Global posts state (used in Feed + Profile)
   const [posts, setPosts] = useState([]);
 
   return (
@@ -26,7 +34,6 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
 
-        {/* ✅ Feed */}
         <Route
           path="/feed"
           element={
@@ -36,31 +43,11 @@ function App() {
           }
         />
 
-        {/* ✅ Chat */}
-        <Route
-          path="/chat"
-          element={
-            <ProtectedRoute>
-              <ChatList />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/chat/:id"
-          element={
-            <ProtectedRoute>
-              <Chat />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ✅ Profile */}
         <Route
           path="/profile"
           element={
             <ProtectedRoute>
-              <Profile posts={posts} />
+              <Profile />
             </ProtectedRoute>
           }
         />
@@ -69,18 +56,16 @@ function App() {
           path="/profile/:id"
           element={
             <ProtectedRoute>
-              <Profile posts={posts} />
+              <Profile />
             </ProtectedRoute>
           }
         />
-<Route
-  path="/edit-profile"
-  element={
-    <ProtectedRoute>
-      <EditProfile />
-    </ProtectedRoute>
-  }
-/>
+
+        <Route path="/chat" element={<ProtectedRoute><ChatList /></ProtectedRoute>} />
+        <Route path="/chat/:id" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+
+        <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+
         <Route path="/developers" element={<Developers />} />
         <Route path="/register" element={<Register />} />
       </Routes>

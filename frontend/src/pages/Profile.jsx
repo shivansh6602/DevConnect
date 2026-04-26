@@ -5,8 +5,17 @@ import { AuthContext } from "../context/AuthContext";
 import { useParams } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import { collection, query, where, getDocs, onSnapshot  } from "firebase/firestore";
 
-const Profile = ({ posts }) => {
+
+const Profile = ({
+  posts,
+  likePost,
+  deletePost,
+  addComment,
+  deleteComment,
+  likeComment
+}) => {
   const { user } = useContext(AuthContext); 
   // 🔥 Logged-in user from Firebase Auth
 
@@ -18,36 +27,75 @@ const Profile = ({ posts }) => {
 
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        // 🔥 If no id → load current user profile
-        const uid = id || user?.uid;
+  const [userPosts, setUserPosts] = useState([]);
+ 
 
-        if (!uid) return;
 
-        const userRef = doc(db, "users", uid); // 🔥 Firestore reference
-        const snap = await getDoc(userRef);
+useEffect(() => {
+  const fetchUser = async () => {
+    try {
+      const uid = id || user?.uid;
+      if (!uid) return;
 
-        if (snap.exists()) {
-          setProfileData(snap.data()); // ✅ Set profile data
-        } else {
-          console.log("User not found");
-        }
-      } catch (error) {
-        console.log("Error fetching user:", error);
+      const userRef = doc(db, "users", uid);
+      const snap = await getDoc(userRef);
+
+      if (snap.exists()) {
+        setProfileData(snap.data());
+        
+      } else {
+        console.log("User not found");
       }
+    } catch (error) {
+      console.log("Error:", error);
+    }
 
-      setLoading(false);
-    };
+    setLoading(false);
+  };
 
-    fetchUser();
-  }, [id, user]);
+  fetchUser();
+}, [id, user]);
 
-  // 🔥 Filter posts of that user
-  const userPosts = posts?.filter(
-    (post) => post.userId === (id || user?.uid)
+useEffect(() => {
+  const uid = id || user?.uid;
+  if (!uid) return;
+
+  const q = query(
+    collection(db, "posts"),
+    where("userId", "==", uid)
   );
+
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    let postsData = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      comments: [],
+    }));
+
+    setUserPosts(postsData);
+
+    // 🔥 Load comments (same as Feed)
+    postsData.forEach((post) => {
+      onSnapshot(
+        collection(db, "posts", post.id, "comments"),
+        (commentSnap) => {
+          const comments = commentSnap.docs.map((c) => ({
+            id: c.id,
+            ...c.data(),
+          }));
+
+          setUserPosts((prev) =>
+            prev.map((p) =>
+              p.id === post.id ? { ...p, comments } : p
+            )
+          );
+        }
+      );
+    });
+  });
+
+  return () => unsubscribe();
+}, [id, user]);
 
   if (loading) return <p>Loading profile...</p>;
 
@@ -57,7 +105,14 @@ const Profile = ({ posts }) => {
   user={profileData} 
   userId={id || user.uid} 
 />
-      <UserPosts posts={userPosts} />
+  <UserPosts 
+    posts={userPosts} 
+  likePost={likePost}
+  deletePost={deletePost}
+  addComment={addComment}
+  deleteComment={deleteComment}
+  likeComment={likeComment}
+/>
     </div>
   );
 };

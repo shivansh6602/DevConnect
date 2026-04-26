@@ -9,7 +9,7 @@ import {
 } from "firebase/firestore";
 import { increment } from "firebase/firestore";
 import { db } from "../firebase";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import CreatePost from "../components/posts/CreatePost";
 import PostList from "../components/posts/PostList";
 import { AuthContext } from "../context/AuthContext";
@@ -19,7 +19,7 @@ import { onSnapshot } from "firebase/firestore";
 
 const Feed = ({ posts, setPosts }) => {
   const { user } = useContext(AuthContext);
-
+const [following, setFollowing] = useState([]);
 const addPost = async (data) => {
   try {
     // 🔥 get user profile from Firestore
@@ -163,28 +163,41 @@ const likePost = async (id) => {
   }
 };
 
-
-
- useEffect(() => {
+useEffect(() => {
   if (!user) return;
 
-  console.log("Current User:", user.uid);
+  const userRef = doc(db, "users", user.uid);
 
-  // 🔥 clear previous posts
-  setPosts([]);
+  const unsubscribe = onSnapshot(userRef, (snap) => {
+    if (snap.exists()) {
+      const data = snap.data();
+      setFollowing(data.following || []);
+    }
+  });
+
+  return () => unsubscribe();
+}, [user]);
+
+useEffect(() => {
+  if (!user) return;
 
   const unsubscribe = onSnapshot(collection(db, "posts"), (snapshot) => {
-
     let postsData = snapshot.docs.map((docSnap) => ({
-  id: docSnap.id,
-  ...docSnap.data(),
-  comments: [],
-}));
+      id: docSnap.id,
+      ...docSnap.data(),
+      comments: [],
+    }));
 
-setPosts(postsData);
+    // 🔥 FILTER POSTS
+    const filteredPosts = postsData.filter(
+      (post) =>
+        following.includes(post.userId) || post.userId === user.uid
+    );
 
-    // 🔥 load comments only for filtered posts
-    postsData.forEach((post) => {
+    setPosts(filteredPosts);
+
+    // 🔥 Load comments (same as before)
+    filteredPosts.forEach((post) => {
       onSnapshot(
         collection(db, "posts", post.id, "comments"),
         (commentSnap) => {
@@ -201,15 +214,18 @@ setPosts(postsData);
         }
       );
     });
-
   });
 
   return () => unsubscribe();
-}, [user]); // ✅ DEPENDENCY ADDED
-
+}, [user, following]);
    
   return (
     <div>
+      {posts.length === 0 && (
+  <p className="text-gray-500 mt-4">
+    Follow users to see their posts 👀
+  </p>
+)}
       <h2>Developer Feed</h2>
 
       <CreatePost addPost={addPost} />

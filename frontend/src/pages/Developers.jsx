@@ -6,16 +6,18 @@ import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 
 const Developers = () => {
+  const navigate = useNavigate(); // ✅ MUST be here
+
   const [users, setUsers] = useState([]);
-const { user: currentUser } = useContext(AuthContext)
+  const { user: currentUser } = useContext(AuthContext);
+
   useEffect(() => {
-  
     const fetchUsers = async () => {
       const snapshot = await getDocs(collection(db, "users"));
 
       const usersData = snapshot.docs.map((doc) => ({
-        id: doc.id,       
-        ...doc.data(),    
+        id: doc.id,
+        ...doc.data(),
       }));
 
       setUsers(usersData);
@@ -23,12 +25,11 @@ const { user: currentUser } = useContext(AuthContext)
 
     fetchUsers();
   }, []);
-   if (!currentUser) {
+
+  if (!currentUser) {
     return <h2>Loading user...</h2>;
   }
-  const navigate = useNavigate();
 
-  
   return (
     <div>
       <h2>Developers</h2>
@@ -48,17 +49,19 @@ const { user: currentUser } = useContext(AuthContext)
             style={{ borderRadius: "50%" }}
             alt="avatar"
           />
-<button onClick={() => navigate(`/profile/${user.id}`)}>
-  View Profile
-</button>
-{user.id !== currentUser.uid && (
-<button onClick={() => navigate(`/chat/${user.id}`)}>
-  Start Chat
-</button>
-)}
+
           <h3>{user.name}</h3>
           <p>{user.bio}</p>
-          
+
+          <button onClick={() => navigate(`/profile/${user.id}`)}>
+            View Profile
+          </button>
+
+          {user.id !== currentUser.uid && (
+            <button onClick={() => navigate(`/chat/${user.id}`)}>
+              Start Chat
+            </button>
+          )}
         </div>
       ))}
     </div>

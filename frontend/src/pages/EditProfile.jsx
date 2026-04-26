@@ -3,13 +3,24 @@ import { AuthContext } from "../context/AuthContext";
 import { db } from "../firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { storage } from "../firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+
 
 const EditProfile = () => {
+const avatarSeeds = [
+  "Shivansh",
+  "Dev",
+  "Coder",
+  "Ninja",
+  "Knight",
+  "Alpha",
+  "Beta",
+  "Gamma"
+];
+
+const [selectedAvatar, setSelectedAvatar] = useState("");
   const { user } = useContext(AuthContext); // current logged user
   const navigate = useNavigate();
-  const [file, setFile] = useState(null);
 
   // 🧠 state = form data
   const [form, setForm] = useState({
@@ -22,20 +33,25 @@ const EditProfile = () => {
 
   // 🔥 fetch existing data
 useEffect(() => {
-  if (!user) return; // ✅ WAIT until user loads
+  if (!user) return; // wait for user
 
   const fetchUser = async () => {
     const docRef = doc(db, "users", user.uid);
     const snap = await getDoc(docRef);
 
     if (snap.exists()) {
+      const data = snap.data();
+
       setForm({
-        name: snap.data().name || "",
-        bio: snap.data().bio || "",
-        github: snap.data().github || "",
-        linkedin: snap.data().linkedin || "",
-        avatar: snap.data().avatar || "",
+        name: data.name || "",
+        bio: data.bio || "",
+        github: data.github || "",
+        linkedin: data.linkedin || "",
+        avatar: data.avatar || "",
       });
+
+      // ✅ FIXED: now snap exists here
+      setSelectedAvatar(data.avatar || "");
     }
   };
 
@@ -43,37 +59,23 @@ useEffect(() => {
 }, [user]);
 
   // 🔥 update firestore
-  const handleUpdate = async () => {
+const handleUpdate = async () => {
   try {
     const docRef = doc(db, "users", user.uid);
 
-    let avatarUrl = form.avatar; // default
-
-    // 🔥 if user selected file → upload
-    if (file) {
-      const storageRef = ref(storage, `avatars/${user.uid}`);
-
-      // upload file
-      await uploadBytes(storageRef, file);
-
-      // get URL
-      avatarUrl = await getDownloadURL(storageRef);
-    }
-
-    // 🔥 update firestore
     await updateDoc(docRef, {
       name: form.name,
       bio: form.bio,
       github: form.github,
       linkedin: form.linkedin,
-      avatar: avatarUrl, // ✅ uploaded URL
+      avatar: form.avatar, // ✅ direct save
     });
 
     alert("Profile Updated ✅");
     navigate("/profile");
 
   } catch (error) {
-    console.log("Upload Error:", error);
+    console.log("Error:", error);
   }
 };
 
@@ -104,24 +106,36 @@ useEffect(() => {
         onChange={(e) => setForm({ ...form, linkedin: e.target.value })}
         placeholder="LinkedIn"
       />
-<input
-  type="file"
-  onChange={(e) => setFile(e.target.files[0])}
-/>
-      {/* <input
-        value={form.avatar}
-        onChange={(e) => setForm({ ...form, avatar: e.target.value })}
-        placeholder="Avatar URL"
-      /> */}
-{file && (
-  <img
-    src={URL.createObjectURL(file)}
-    alt="preview"
-    style={{ width: "80px", borderRadius: "50%" }}
-  />
-)}
+<h3>Select Avatar</h3>
 
-{form.avatar && !file && (
+<div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+  {avatarSeeds.map((seed, index) => {
+    const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
+
+    return (
+      <img
+        key={index}
+        src={avatarUrl}
+        alt="avatar"
+        width="80"
+        style={{
+          cursor: "pointer",
+          border:
+            selectedAvatar === avatarUrl
+              ? "3px solid blue"
+              : "2px solid gray",
+          borderRadius: "50%",
+        }}
+       onClick={() => {
+  setSelectedAvatar(avatarUrl);
+  setForm({ ...form, avatar: avatarUrl }); // 🔥 sync with form
+}}
+      />
+    );
+  })}
+</div>
+
+{form.avatar && (
   <img
     src={form.avatar}
     alt="current"

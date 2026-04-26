@@ -1,33 +1,49 @@
-import { updateDoc, doc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { useContext, useEffect, useState } from "react";
+import { updateDoc, doc, arrayUnion, arrayRemove, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase";
-import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import FollowList from "./FollowList";
 
 const ProfileHeader = ({ user, userId }) => {
-  const navigate = useNavigate(); // ✅ fix
+  const [liveUser, setLiveUser] = useState(user);
 
+  const [showFollowers, setShowFollowers] = useState(false);
+const [showFollowing, setShowFollowing] = useState(false);
+  const navigate = useNavigate();
   const { user: currentUser } = useContext(AuthContext);
 
-  if (!user || !currentUser) return <p>Loading...</p>;
+  // 🔥 Real-time listener
+  useEffect(() => {
+    const userRef = doc(db, "users", userId);
 
-  // 🔥 check follow status
-const followers = Array.isArray(user.followers)
-  ? user.followers
-  : [];
+    const unsubscribe = onSnapshot(userRef, (snap) => {
+      if (snap.exists()) {
+        setLiveUser(snap.data());
+      }
+    });
 
-const following = Array.isArray(user.following)
-  ? user.following
-  : [];
+    return () => unsubscribe();
+  }, [userId]);
 
-const isFollowing = followers.includes(currentUser.uid);
+  if (!liveUser || !currentUser) return <p>Loading...</p>;
+
+  // ✅ ALWAYS use liveUser now
+  const followers = Array.isArray(liveUser.followers)
+    ? liveUser.followers
+    : [];
+
+  const following = Array.isArray(liveUser.following)
+    ? liveUser.following
+    : [];
+
+  const isFollowing = followers.includes(currentUser.uid);
 
   const handleFollow = async () => {
     const currentUserRef = doc(db, "users", currentUser.uid);
-    const profileRef = doc(db, "users", userId); // ✅ FIXED
+    const profileRef = doc(db, "users", userId);
 
     if (isFollowing) {
-      // ❌ Unfollow
       await updateDoc(profileRef, {
         followers: arrayRemove(currentUser.uid),
       });
@@ -36,7 +52,6 @@ const isFollowing = followers.includes(currentUser.uid);
         following: arrayRemove(userId),
       });
     } else {
-      // ✅ Follow
       await updateDoc(profileRef, {
         followers: arrayUnion(currentUser.uid),
       });
@@ -50,27 +65,45 @@ const isFollowing = followers.includes(currentUser.uid);
   return (
     <div className="flex items-center gap-4 p-4 border rounded-xl shadow-sm">
 
+    {showFollowers && (
+  <FollowList
+    ids={followers}
+    title="Followers"
+    onClose={() => setShowFollowers(false)}
+  />
+)}
+
+{showFollowing && (
+  <FollowList
+    ids={following}
+    title="Following"
+    onClose={() => setShowFollowing(false)}
+  />
+)}  
       {/* Avatar */}
       <img
-        src={user.avatar}
+        src={
+          liveUser.avatar ||
+          `https://api.dicebear.com/7.x/avataaars/svg?seed=${liveUser.name || "User"}`
+        }
         alt="avatar"
         className="w-20 h-20 rounded-full border"
       />
 
       <div>
-        <h2 className="text-xl font-semibold">{user.name}</h2>
-        <p className="text-gray-600">{user.bio}</p>
+        <h2 className="text-xl font-semibold">{liveUser.name}</h2>
+        <p className="text-gray-600">{liveUser.bio}</p>
 
         {/* Links */}
         <div className="flex gap-3 mt-2">
-          {user.github && (
-            <a href={user.github} target="_blank" className="text-blue-500">
+          {liveUser.github && (
+            <a href={liveUser.github} target="_blank" className="text-blue-500">
               GitHub
             </a>
           )}
 
-          {user.linkedin && (
-            <a href={user.linkedin} target="_blank" className="text-blue-500">
+          {liveUser.linkedin && (
+            <a href={liveUser.linkedin} target="_blank" className="text-blue-500">
               LinkedIn
             </a>
           )}
@@ -78,8 +111,18 @@ const isFollowing = followers.includes(currentUser.uid);
 
         {/* Followers */}
         <div className="flex gap-4 mt-2 text-sm text-gray-600">
-          <p><strong>{followers.length}</strong> Followers</p>
-          <p><strong>{user.following?.length || 0}</strong> Following</p>
+          <p
+  onClick={() => setShowFollowers(true)}
+  className="cursor-pointer"
+>
+  <strong>{followers.length}</strong> Followers
+</p>
+          <p
+  onClick={() => setShowFollowing(true)}
+  className="cursor-pointer"
+>
+  <strong>{following.length}</strong> Following
+</p>
         </div>
 
         {/* Follow Button */}

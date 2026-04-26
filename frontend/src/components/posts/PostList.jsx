@@ -16,15 +16,9 @@ const PostList = ({
   return (
     <div className="flex flex-col gap-4 mt-4">
       {posts.map((post) => (
-        <Post
-          key={post.id}
-          post={post}
-          deletePost={deletePost}
-          likePost={likePost}
-          addComment={addComment}
-          deleteComment={deleteComment}
-          likeComment={likeComment}
-        />
+        <Post 
+        key={post.id}
+        post={post} />
       ))}
     </div>
   );
