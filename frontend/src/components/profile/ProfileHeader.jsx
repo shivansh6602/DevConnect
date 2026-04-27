@@ -92,6 +92,7 @@ const [showFollowing, setShowFollowing] = useState(false);
 
       <div>
         <h2 className="text-xl font-semibold">{liveUser.name}</h2>
+        <p className="text-gray-500">@{liveUser.username}</p>
         <p className="text-gray-600">{liveUser.bio}</p>
 
         {/* Links */}

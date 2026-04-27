@@ -6,14 +6,17 @@ import {
   onSnapshot,
   query,
   orderBy,
+  doc,
+  updateDoc,
 } from "firebase/firestore";
 import { AuthContext } from "../../context/AuthContext";
+import { serverTimestamp } from "firebase/firestore";
 
 const ChatBox = ({ chatId, otherUserId }) => {
   const { user } = useContext(AuthContext);
 
-  const [messages, setMessages] = useState([]); // ✅ FIXED
-  const [text, setText] = useState(""); // ✅ FIXED
+  const [messages, setMessages] = useState([]);
+  const [text, setText] = useState("");
 
   const bottomRef = useRef(null);
 
@@ -38,19 +41,47 @@ const ChatBox = ({ chatId, otherUserId }) => {
     return () => unsubscribe();
   }, [chatId]);
 
+  // 🔥 Mark messages as seen
+ useEffect(() => {
+  if (!user || !chatId || messages.length === 0) return;
+
+  const unseenMessages = messages.filter(
+    (msg) => msg.senderId !== user.uid && !msg.seen
+  );
+
+  if (unseenMessages.length === 0) return;
+
+  unseenMessages.forEach(async (msg) => {
+    const ref = doc(db, "chats", chatId, "messages", msg.id);
+    await updateDoc(ref, { seen: true });
+  });
+
+}, [messages, user, chatId]);
+
   // 🔥 Auto scroll
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 🔥 Send message
+  // 🔥 Send message (FINAL CLEAN VERSION)
   const sendMessage = async () => {
     if (!text.trim()) return;
 
+    // 1. Save message
     await addDoc(collection(db, "chats", chatId, "messages"), {
       text,
       senderId: user.uid,
-      createdAt: new Date(),
+      createdAt: serverTimestamp(),
+      seen: false,
+    });
+
+    // 2. Create notification
+    await addDoc(collection(db, "notifications"), {
+      to: otherUserId,
+      from: user.uid,
+      type: "message",
+      read: false,
+      createdAt: serverTimestamp(),
     });
 
     setText("");
@@ -70,14 +101,21 @@ const ChatBox = ({ chatId, otherUserId }) => {
                 : "justify-start"
             }`}
           >
-            <div
-              className={`px-3 py-2 rounded-lg max-w-xs ${
-                msg.senderId === user.uid
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-300"
-              }`}
-            >
+         <div
+  className={`px-4 py-2 rounded-2xl max-w-xs shadow ${
+    msg.senderId === user.uid
+      ? "bg-blue-500 text-white rounded-br-none"
+      : "bg-white border rounded-bl-none"
+  }`}
+>
               {msg.text}
+
+              {/* ✅ Seen / Delivered */}
+              {msg.senderId === user.uid && (
+                <p className="text-xs mt-1 opacity-70">
+                  {msg.seen ? "Seen ✅" : "Delivered ✔"}
+                </p>
+              )}
             </div>
           </div>
         ))}
@@ -93,6 +131,9 @@ const ChatBox = ({ chatId, otherUserId }) => {
           value={text}
           onChange={(e) => setText(e.target.value)}
           className="flex-1 border p-2 rounded-full"
+          onKeyDown={(e) => {
+  if (e.key === "Enter") sendMessage();
+}}
         />
 
         <button

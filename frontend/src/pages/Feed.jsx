@@ -20,6 +20,8 @@ import { onSnapshot } from "firebase/firestore";
 const Feed = ({ posts, setPosts }) => {
   const { user } = useContext(AuthContext);
 const [following, setFollowing] = useState([]);
+const [suggestedUsers, setSuggestedUsers] = useState([]);
+
 const addPost = async (data) => {
   try {
     // 🔥 get user profile from Firestore
@@ -87,7 +89,18 @@ const likePost = async (id) => {
     console.error("Error liking post:", error);
   }
 };
+const followUser = async (targetId) => {
+  const currentUserRef = doc(db, "users", user.uid);
+  const targetRef = doc(db, "users", targetId);
 
+  await updateDoc(targetRef, {
+    followers: arrayUnion(user.uid),
+  });
+
+  await updateDoc(currentUserRef, {
+    following: arrayUnion(targetId),
+  });
+};
  const addComment = async (postId, text) => {
   if (!text.trim()) return;
 
@@ -219,8 +232,52 @@ useEffect(() => {
   return () => unsubscribe();
 }, [user, following]);
    
+useEffect(() => {
+  if (!user) return;
+
+  const fetchSuggested = async () => {
+    const snap = await getDocs(collection(db, "users"));
+
+    const allUsers = snap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    const filtered = allUsers.filter(
+      (u) =>
+        u.id !== user.uid &&
+        !following.includes(u.id)
+    );
+
+    setSuggestedUsers(filtered.slice(0, 5)); // limit
+  };
+
+  fetchSuggested();
+}, [user, following]);
+
   return (
     <div>
+      <div className="p-3 border rounded mb-4">
+  <h3 className="font-semibold mb-2">Suggested Developers</h3>
+
+  {suggestedUsers.map((u) => (
+    <div key={u.id} className="flex items-center justify-between mb-2">
+
+      <div className="flex items-center gap-2">
+        <img src={u.avatar} className="w-8 h-8 rounded-full" />
+        <p>{u.name}</p>
+      </div>
+
+      <button
+        onClick={() => followUser(u.id)}
+        className="text-blue-500"
+      >
+        Follow
+      </button>
+
+    </div>
+  ))}
+</div>
       {posts.length === 0 && (
   <p className="text-gray-500 mt-4">
     Follow users to see their posts 👀

@@ -2,18 +2,22 @@ import React, { useState } from "react";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 const Register = () => {
   const [name, setName] = useState(""); // user name
   const [email, setEmail] = useState(""); // user email
   const [password, setPassword] = useState(""); // password
 const [avatar, setAvatar] = useState("");
+const [username, setUsername] = useState("");
   // 🔥 Avatar options
   const avatars = [
     "https://api.dicebear.com/7.x/adventurer/svg?seed=1",
     "https://api.dicebear.com/7.x/adventurer/svg?seed=2",
     "https://api.dicebear.com/7.x/adventurer/svg?seed=3",
     "https://api.dicebear.com/7.x/adventurer/svg?seed=4",
+    "https://api.dicebear.com/7.x/adventurer/svg?seed=5",
+    "https://api.dicebear.com/7.x/adventurer/svg?seed=344455",
   ];
 
   const [selectedAvatar, setSelectedAvatar] = useState(avatars[0]); // default avatar
@@ -21,52 +25,56 @@ const [avatar, setAvatar] = useState("");
   const auth = getAuth();
 
   const handleRegister = async () => {
-    // ✅ validation
-    if (!name || !email || !password) {
-      alert("All fields are required");
+  try {
+    const isAvailable = await checkUsername();
+
+    if (!isAvailable) {
+      alert("Username already taken!");
       return;
     }
 
-    if (password.length < 6) {
-      alert("Password must be at least 6 characters");
-      return;
-    }
+    // 1. Create Auth user
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-    try {
-      const userCred = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+    const user = userCredential.user;
 
-      const user = userCred.user;
+  await setDoc(doc(db, "users", user.uid), {
+  name,
+  email,
 
-      // ✅ Save user in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        name: name,
-        email: email,
-        avatar: avatar || selectedAvatar,// 🔥 store selected avatar
-        bio: "New Developer 🚀",
-        github: "",
-        linkedin: "",
-        followers: [], // ✅ FIXED
-        following: [], // ✅ FIXED
-      });
+  // ✅ FORCE CLEAN USERNAME
+  username: username.toLowerCase().trim(),
 
-      console.log("User Created + Profile Saved");
+  // ✅ USE SELECTED OR INPUT AVATAR
+  avatar: avatar || selectedAvatar,
 
-    } catch (error) {
-      console.log("Signup Error:", error.message);
+  bio: "",
+  followers: [],
+  following: [],
+  createdAt: new Date(),
+});
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+const checkUsername = async () => {
+  const cleanUsername = username.toLowerCase().trim();
 
-      if (error.code === "auth/email-already-in-use") {
-        alert("Email already registered");
-      } else if (error.code === "auth/invalid-email") {
-        alert("Invalid email format");
-      } else {
-        alert(error.message);
-      }
-    }
-  };
+  const q = query(
+    collection(db, "users"),
+    where("username", "==", cleanUsername)
+  );
+
+  const snap = await getDocs(q);
+
+  return snap.empty; // true = available
+};
+
+ 
 
   return (
     <div>
@@ -109,7 +117,12 @@ const [avatar, setAvatar] = useState("");
     style={{ width: "80px", borderRadius: "50%", marginTop: "10px" }}
   />
 )}
-
+<input
+  type="text"
+  placeholder="Username (unique)"
+  value={username}
+  onChange={(e) => setUsername(e.target.value)}
+/>
 {/* Avatar Picker */}
 <h3>Select Avatar</h3>
 <div style={{ display: "flex", gap: "10px" }}>

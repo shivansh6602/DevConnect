@@ -8,14 +8,34 @@ import { useNavigate } from "react-router-dom";
 
 const EditProfile = () => {
 const avatarSeeds = [
-  "Shivansh",
+  
   "Dev",
   "Coder",
-  "Ninja",
+  
   "Knight",
-  "Alpha",
+  
+  "Boxerdfr",
+   "Ctder",
+  "Alpa",
+  "f",
+  "g",
   "Beta",
-  "Gamma"
+  
+  "Cder",
+  "Ctder",
+  "Boxer",
+  "Ninja",
+  "Boer",
+  
+  "Ber",
+  
+  
+  
+  "Boxgger",
+  "Bogxerr",
+  
+  "Boxegrgfr",
+  "Boxegrfr"
 ];
 
 const [selectedAvatar, setSelectedAvatar] = useState("");
@@ -110,8 +130,8 @@ const handleUpdate = async () => {
 
 <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
   {avatarSeeds.map((seed, index) => {
-    const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
-
+    const avatarUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}`;
+https://api.dicebear.com/7.x/adventurer/svg?seed=
     return (
       <img
         key={index}
