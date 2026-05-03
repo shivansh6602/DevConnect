@@ -22,16 +22,26 @@ const Register = () => {
   const [skillInput, setSkillInput] = useState("");
 
   // 🎨 Toon avatars (DiceBear toon-head)
-  const avatars = [
-    "https://api.dicebear.com/7.x/toon/svg?seed=dev1",
-    "https://api.dicebear.com/7.x/toon/svg?seed=dev2",
-    "https://api.dicebear.com/7.x/toon/svg?seed=dev3",
-    "https://api.dicebear.com/7.x/toon/svg?seed=dev4",
-    "https://api.dicebear.com/7.x/toon/svg?seed=dev5",
-  ];
+ // 🎨 Avatar generator
+const getAvatar = (seed) =>
+  `https://api.dicebear.com/9.x/toon-head/svg?seed=${encodeURIComponent(seed)}&backgroundColor=b6e3f4,c0aede,d1d4f9&eyes=wide&eyebrows=neutral,happy&mouth=smile&hair=bun,sideComed,spiky,undercut&rearHair=longStraight,longWavy,shoulderHigh&clothes=shirt,tShirt,openJacket&skinColor=f1c3a5,c68e7a&beardProbability=10`;
+const avatars = [
+   getAvatar("ddssssddscr"),
+  getAvatar("annnmmnmnmlccxex"),
+  getAvatar("emma"),
+  getAvatar("johccxxxn"),
+  getAvatar("noah"),
+  getAvatar("sopchia"),
+  getAvatar("mike"),
+  getAvatar("olivia"),
+  getAvatar("licnnxxxxxxcccam"),
+  getAvatar("ava"),
+  
+  getAvatar("isabella"),
+];
 
-  const [selectedAvatar, setSelectedAvatar] = useState(avatars[0]);
-
+// ✅ THEN use it
+const [selectedAvatar, setSelectedAvatar] = useState(avatars[0]);
   // 🔍 Username check
   const checkUsername = async () => {
     const clean = username.toLowerCase().trim();
@@ -153,19 +163,27 @@ const Register = () => {
           value={linkedin} onChange={(e) => setLinkedin(e.target.value)} />
 
         {/* 🎨 Avatar picker */}
+        <img
+  src={selectedAvatar || getAvatar(name)}
+  alt="preview"
+  className="w-20 h-20 rounded-full mx-auto mb-3 border"
+/>
         <p className="text-sm font-semibold mb-2">Choose Avatar</p>
-        <div className="flex gap-3 mb-4 justify-center">
-          {avatars.map((img, i) => (
-            <img
-              key={i}
-              src={img}
-              className={`w-12 h-12 rounded-full cursor-pointer border-2 ${
-                selectedAvatar === img ? "border-indigo-500" : "border-gray-300"
-              }`}
-              onClick={() => setSelectedAvatar(img)}
-            />
-          ))}
-        </div>
+ <div className="flex gap-3 mb-4 justify-center">
+  {avatars.map((img, i) => (
+    <img
+      key={i}
+      src={img}
+      alt="avatar"
+      onClick={() => setSelectedAvatar(img)}
+      onError={(e) => {
+        e.target.src = getAvatar("fallback");
+      }}
+      className={`w-14 h-14 rounded-full cursor-pointer border-2 transition 
+        ${selectedAvatar === img ? "border-indigo-600 scale-110" : "border-gray-300"}`}
+    />
+  ))}
+</div>
 
         {/* Button */}
         <button

@@ -2,15 +2,35 @@ import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuthContext } from "../../context/AuthContext";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 
 function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropOpen, setDropOpen] = useState(false);
 
+  const [userData, setUserData] = useState(null);
+
   const { user, logout } = useContext(AuthContext);
 const isLoggedIn = !!user;
   const navigate = useNavigate();
+
+
+    useEffect(() => {
+    const fetchUser = async () => {
+      if (!user) return;
+
+      const docRef = doc(db, "users", user.uid);
+      const snap = await getDoc(docRef);
+
+      if (snap.exists()) {
+        setUserData(snap.data());
+      }
+    };
+
+    fetchUser();
+  }, [user]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -18,10 +38,11 @@ const isLoggedIn = !!user;
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-const NAV_LINKS_GUEST = ["Home"];
-const NAV_LINKS_USER = ["Feed", "Developers", "Chat", "Profile"];
 
-const links = isLoggedIn ? NAV_LINKS_USER : NAV_LINKS_GUEST;
+  const NAV_LINKS_GUEST = [];
+  const NAV_LINKS_USER = ["Home", "Feed", "Developers", "Chat", "Profile"];
+
+  const links = isLoggedIn ? NAV_LINKS_USER : NAV_LINKS_GUEST;
         const routeMap = {
   Home: "/",
   Feed: "/feed",
@@ -29,6 +50,7 @@ const links = isLoggedIn ? NAV_LINKS_USER : NAV_LINKS_GUEST;
   Chat: "/chat",
   Profile: "/profile",
 };
+
   return (
     <motion.nav
       initial={{ y: -80, opacity: 0 }}
@@ -92,8 +114,8 @@ const links = isLoggedIn ? NAV_LINKS_USER : NAV_LINKS_GUEST;
                   onClick={() => setDropOpen(!dropOpen)}
                   className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700/50 transition-all"
                 >
-                  <img src="https://api.dicebear.com/7.x/bottts/svg?seed=me&backgroundColor=1a1a3e" className="w-7 h-7 rounded-lg" alt="avatar" />
-                  <span className="text-slate-300 text-sm font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Shivansh</span>
+                  <img src={userData?.avatar} className="w-7 h-7 rounded-lg" alt="avatar" />
+                  <span className="text-slate-300 text-sm font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{userData?.name || "User"}</span>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-500">
                     <path d="M6 9l6 6 6-6"/>
                   </svg>
@@ -106,7 +128,7 @@ const links = isLoggedIn ? NAV_LINKS_USER : NAV_LINKS_GUEST;
                       exit={{ opacity: 0, y: 8, scale: 0.96 }}
                       className="absolute right-0 top-12 w-44 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden"
                     >
-                      {["Profile", "Settings", "Sign Out"].map((item) => (
+                      {["Profile", "Sign Out"].map((item) => (
                        <button
   key={item}
   onClick={async () => {
@@ -172,9 +194,9 @@ const links = isLoggedIn ? NAV_LINKS_USER : NAV_LINKS_GUEST;
             className="md:hidden bg-slate-900/95 backdrop-blur-xl border-t border-slate-700/50 px-8 pb-4"
           >
             {links.map((link) => (
-              <a key={link} href="#" className="block py-3 text-slate-400 hover:text-white text-sm font-medium border-b border-slate-800/60" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              <Link to={routeMap[link]} className="block py-3 text-slate-400 hover:text-white text-sm font-medium border-b border-slate-800/60" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 {link}
-              </a>
+              </Link>
             ))}
           </motion.div>
         )}
