@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { 
+  getAuth, 
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup
+} from "firebase/auth";
+
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { db } from "../firebase";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -19,6 +27,41 @@ const Login = () => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+  const provider = new GoogleAuthProvider();
+
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    // 🔥 Check if user already exists in Firestore
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      // 🆕 New user → create profile
+      await setDoc(userRef, {
+        name: user.displayName,
+        email: user.email,
+        username: user.email.split("@")[0],
+        avatar: user.photoURL,
+        bio: "",
+        skills: [],
+        github: "",
+        linkedin: "",
+        followers: [],
+        following: [],
+        postCount: 0,
+      });
+    }
+
+    navigate("/feed");
+
+  } catch (error) {
+    console.error(error);
+    alert("Google sign-in failed");
+  }
+};
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600">
 
@@ -48,7 +91,18 @@ const Login = () => {
           >
             Login
           </button>
-
+<button
+  onClick={handleGoogleLogin}
+  type="button"
+  className="w-full mt-3 flex items-center justify-center gap-2 border py-3 rounded-lg hover:bg-gray-100 transition"
+>
+  <img 
+    src="https://www.svgrepo.com/show/475656/google-color.svg" 
+    alt="google" 
+    className="w-5 h-5"
+  />
+  Continue with Google
+</button>
           <p className="text-sm text-center mt-4">
             Don’t have an account?{" "}
             <Link to="/register" className="text-blue-600 font-semibold">
