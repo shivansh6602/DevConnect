@@ -520,21 +520,15 @@ const { user } = useContext(AuthContext);
           {/* Buttons — design system: from-purple-600 via-pink-600 to-indigo-600, px-8 py-4, rounded-2xl */}
           <div className="flex flex-wrap gap-4">
             <motion.button
-              whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(147,51,234,0.5)" }}
-              whileTap={{ scale: 0.98 }}
-              className="px-8 py-4 rounded-2xl font-semibold text-white text-lg bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transition-all duration-300"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-            >
-              Get Started
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-8 py-4 rounded-2xl font-semibold text-slate-300 text-lg bg-slate-900/60 backdrop-blur-md border border-slate-700/50 hover:border-purple-500/50 hover:text-white transition-all duration-300"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-            >
-              Explore Feed
-            </motion.button>
+  whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(147,51,234,0.5)" }}
+  whileTap={{ scale: 0.98 }}
+  onClick={() => navigate(user ? "/feed" : "/register")}
+  className="px-8 py-4 rounded-2xl font-semibold text-white text-lg bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transition-all duration-300"
+  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+>
+  {user ? "Go to Feed" : "Get Started"}
+</motion.button>
+            
           </div>
 
           {/* Social proof */}
@@ -698,6 +692,8 @@ function PostCard({ post, delay }) {
 }
 
 function FeedSection() {
+  const navigate = useNavigate();
+const { user } = useContext(AuthContext);
   return (
     <section className="relative py-24 z-10">
       <div className="max-w-7xl mx-auto px-8">
@@ -731,14 +727,15 @@ function FeedSection() {
           viewport={{ once: true }}
           className="text-center mt-10"
         >
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.98 }}
-            className="px-8 py-4 rounded-2xl text-sm font-semibold text-slate-400 bg-slate-900/60 backdrop-blur-md border border-slate-700/50 hover:border-purple-500/50 hover:text-white transition-all duration-300"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-          >
-            View Full Feed →
-          </motion.button>
+         <motion.button
+  whileHover={{ scale: 1.05 }}
+  whileTap={{ scale: 0.98 }}
+  onClick={() => navigate(user ? "/feed" : "/register")}
+  className="px-8 py-4 rounded-2xl text-sm font-semibold text-slate-400 bg-slate-900/60 backdrop-blur-md border border-slate-700/50 hover:border-purple-500/50 hover:text-white transition-all duration-300"
+  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+>
+  {user ? "View Full Feed →" : "Register to Explore Feed →"}
+</motion.button>
         </motion.div>
       </div>
     </section>
@@ -746,9 +743,10 @@ function FeedSection() {
 }
 
 // ─── DEVELOPERS SECTION ───────────────────────────────────────────────────────
-function DevCard({ dev, delay }) {
+function DevCard({ dev, delay, setShowAuthPopup }) {
   const [following, setFollowing] = useState(false);
-
+const { user } = useContext(AuthContext);
+const navigate = useNavigate();
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -787,7 +785,14 @@ function DevCard({ dev, delay }) {
       <div className="relative flex gap-2">
         <motion.button
           whileTap={{ scale: 0.95 }}
-          onClick={() => setFollowing(!following)}
+         onClick={() => {
+  if (!user) {
+    setShowAuthPopup(true);
+    return;
+  }
+
+  setFollowing(!following);
+}}
           className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all duration-300 ${
             following
               ? "bg-slate-800/60 text-slate-400 border border-slate-700/50 hover:border-pink-500/30 hover:text-pink-400"
@@ -797,19 +802,27 @@ function DevCard({ dev, delay }) {
         >
           {following ? "Unfollow" : "Follow"}
         </motion.button>
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          className="flex-1 py-2 rounded-xl text-xs font-semibold text-slate-400 bg-slate-800/60 border border-slate-700/50 hover:text-white hover:border-purple-500/30 transition-all duration-300"
-          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-        >
-          View Profile
-        </motion.button>
+   <motion.button
+  whileTap={{ scale: 0.95 }}
+  onClick={() => {
+    if (!user) {
+      setShowAuthPopup(true);
+      return;
+    }
+
+    navigate("/profile");
+  }}
+  className="flex-1 py-2 rounded-xl text-xs font-semibold text-slate-400 bg-slate-800/60 border border-slate-700/50 hover:text-white hover:border-purple-500/30 transition-all duration-300"
+  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+>
+  View Profile
+</motion.button>
       </div>
     </motion.div>
   );
 }
 
-function DevelopersSection() {
+function DevelopersSection({ setShowAuthPopup }) {
   return (
     <section className="relative py-24 z-10">
       <div className="max-w-7xl mx-auto px-8">
@@ -835,7 +848,12 @@ function DevelopersSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {SAMPLE_DEVS.map((dev, i) => (
-            <DevCard key={dev.id} dev={dev} delay={i * 0.15} />
+            <DevCard
+  key={dev.id}
+  dev={dev}
+  delay={i * 0.15}
+  setShowAuthPopup={setShowAuthPopup}
+/>
           ))}
         </div>
       </div>
@@ -978,6 +996,8 @@ function ChatSection() {
 
 // ─── CTA ──────────────────────────────────────────────────────────────────────
 function CTASection() {
+  const navigate = useNavigate();
+const { user } = useContext(AuthContext);
   return (
     <section className="relative py-28 z-10 overflow-hidden">
       <div className="max-w-7xl mx-auto px-8">
@@ -1031,21 +1051,15 @@ function CTASection() {
 
               <div className="flex flex-wrap justify-center gap-4">
                 <motion.button
-                  whileHover={{ scale: 1.05, boxShadow: "0 0 50px rgba(147,51,234,0.6)" }}
-                  whileTap={{ scale: 0.98 }}
-                  className="px-10 py-5 rounded-2xl font-semibold text-white text-lg bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transition-all duration-300"
-                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                >
-                  Get Started — It's Free
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="px-10 py-5 rounded-2xl font-semibold text-slate-300 text-lg bg-slate-900/60 backdrop-blur-md border border-slate-700/50 hover:border-purple-500/50 hover:text-white transition-all duration-300"
-                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                >
-                  View Demo
-                </motion.button>
+  whileHover={{ scale: 1.05, boxShadow: "0 0 50px rgba(147,51,234,0.6)" }}
+  whileTap={{ scale: 0.98 }}
+  onClick={() => navigate(user ? "/feed" : "/register")}
+  className="px-10 py-5 rounded-2xl font-semibold text-white text-lg bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transition-all duration-300"
+  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+>
+  {user ? "Go to Feed" : "Get Started — It's Free"}
+</motion.button>
+              
               </div>
 
               <div className="mt-10 flex items-center justify-center gap-8 text-slate-500 text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -1095,7 +1109,7 @@ export default function Home() {
   
 const { user } = useContext(AuthContext);
 const isLoggedIn = !!user;
-
+const [showAuthPopup, setShowAuthPopup] = useState(false);
   return (
     <>
       {/* Design system font: Space Grotesk */}
@@ -1114,9 +1128,70 @@ const isLoggedIn = !!user;
         
         <Hero />
         <FeedSection />
-        <DevelopersSection />
+        <DevelopersSection setShowAuthPopup={setShowAuthPopup} />
         <ChatSection />
         <CTASection />
+        <AnimatePresence>
+  {showAuthPopup && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+    >
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0, y: 40 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.8, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 180, damping: 18 }}
+        className="relative w-full max-w-md overflow-hidden rounded-3xl border border-purple-500/30 bg-slate-900/90 p-8 shadow-2xl"
+      >
+        {/* Glow */}
+        <div className="absolute -top-20 -left-20 w-40 h-40 bg-purple-600/30 rounded-full blur-3xl" />
+        <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-pink-600/30 rounded-full blur-3xl" />
+
+        <div className="relative z-10 text-center">
+          <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 flex items-center justify-center text-3xl shadow-xl shadow-purple-500/30">
+            🚀
+          </div>
+
+          <h2
+            className="text-3xl font-bold text-white mb-3"
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            Join DevConnect
+          </h2>
+
+          <p
+            className="text-slate-400 text-sm leading-relaxed mb-8"
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            Create your developer profile to follow developers,
+            explore profiles, and start networking with the community.
+          </p>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowAuthPopup(false)}
+              className="flex-1 py-3 rounded-2xl bg-slate-800/70 border border-slate-700/50 text-slate-400 hover:text-white transition-all"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              Maybe Later
+            </button>
+
+            <button
+              onClick={() => navigate("/register")}
+              className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white font-semibold shadow-xl shadow-purple-500/25 hover:shadow-purple-500/40 transition-all"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              Register
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
         <Footer />
       </div>
     </>

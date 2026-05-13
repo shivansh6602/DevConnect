@@ -197,7 +197,7 @@ function PostPlaceholder({ delay }) {
 }
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
-const ProfileHeader = ({ user, userId }) => {
+const ProfileHeader = ({ user, userId, postCount }) => {
   const [liveUser, setLiveUser] = useState(user);
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
@@ -234,7 +234,6 @@ const ProfileHeader = ({ user, userId }) => {
   const following = Array.isArray(liveUser.following) ? liveUser.following : [];
   const isFollowing = followers.includes(currentUser.uid);
   const isOwner = currentUser.uid === userId;
-  const postCount = liveUser.postCount ?? 0;
 
   const handleFollow = async () => {
     const currentUserRef = doc(db, "users", currentUser.uid);
@@ -260,9 +259,8 @@ const ProfileHeader = ({ user, userId }) => {
         html { scroll-behavior: smooth; }
       `}</style>
 
-      <div
-        className="min-h-screen relative overflow-x-hidden"
-        style={{ background: "linear-gradient(to bottom right, #0f0c29, #302b63, #24243e)" }}
+   <div
+  className="relative overflow-x-hidden"
       >
         <StarField />
 
@@ -537,63 +535,7 @@ const ProfileHeader = ({ user, userId }) => {
             />
           </div>
 
-          {/* ── POSTS SECTION ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.35 }}
-          >
-            {/* Section header */}
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-3">
-                <span className="w-1 h-5 rounded-full bg-gradient-to-b from-purple-500 to-pink-500" />
-                <h2
-                  className="text-white font-semibold text-base"
-                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                >
-                  Activity
-                </h2>
-                <span
-                  className="text-xs text-slate-600 bg-slate-800/50 border border-slate-700/50 px-2 py-0.5 rounded-full"
-                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                >
-                  {postCount} posts
-                </span>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.04 }}
-                className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
-                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-              >
-                View all →
-              </motion.button>
-            </div>
-
-            {postCount === 0 ? (
-              /* Empty state */
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="relative bg-slate-900/40 backdrop-blur-md border border-slate-800/60 border-dashed rounded-2xl py-16 text-center"
-              >
-                <div className="text-3xl mb-3">🛸</div>
-                <p
-                  className="text-slate-500 text-sm"
-                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                >
-                  No posts yet. The feed awaits.
-                </p>
-              </motion.div>
-            ) : (
-              /* Post grid placeholders — replace with real PostCard components */
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {Array.from({ length: Math.min(postCount, 4) }).map((_, i) => (
-                  <PostPlaceholder key={i} delay={0.38 + i * 0.08} />
-                ))}
-              </div>
-            )}
-          </motion.div>
+         
 
         </div>
       </div>

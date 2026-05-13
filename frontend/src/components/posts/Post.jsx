@@ -294,18 +294,7 @@ const Post = ({ post }) => {
               {commentCount}
             </motion.button>
 
-            {/* Share — cosmetic */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.9 }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-500 bg-slate-800/50 border border-slate-700/40 hover:text-purple-400 hover:bg-purple-500/8 hover:border-purple-500/20 transition-all duration-300 ml-auto"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/>
-              </svg>
-              Share
-            </motion.button>
+          
           </div>
 
           {/* ── Comments section ── */}

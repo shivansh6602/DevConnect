@@ -99,22 +99,34 @@ useEffect(() => {
 
   if (loading) return <p>Loading profile...</p>;
 
-  return (
-    <div>
-   <ProfileHeader 
+return (
+  <div
+    className="min-h-screen"
+    style={{
+      background:
+        "linear-gradient(to bottom right, #0f0c29, #302b63, #24243e)",
+    }}
+  >
+    {/* Profile Header */}
+    <ProfileHeader 
   user={profileData} 
-  userId={id || user.uid} 
+  userId={id || user.uid}
+  postCount={userPosts.length}
 />
-  <UserPosts 
-    posts={userPosts} 
-  likePost={likePost}
-  deletePost={deletePost}
-  addComment={addComment}
-  deleteComment={deleteComment}
-  likeComment={likeComment}
-/>
+
+    {/* User Posts Section */}
+    <div className="relative z-10 max-w-4xl mx-auto px-4 pb-20 -mt-10">
+      <UserPosts
+        posts={userPosts}
+        likePost={likePost}
+        deletePost={deletePost}
+        addComment={addComment}
+        deleteComment={deleteComment}
+        likeComment={likeComment}
+      />
     </div>
-  );
+  </div>
+);
 };
 
 export default Profile;

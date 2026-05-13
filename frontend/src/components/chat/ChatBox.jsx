@@ -154,7 +154,7 @@ const ChatBox = ({ chatId, otherUserId }) => {
   const [sending, setSending]   = useState(false);
   const bottomRef               = useRef(null);
 
-  // ── ALL ORIGINAL FIREBASE LOGIC — UNCHANGED ─────────────────────────────────
+
   useEffect(() => {
     if (!chatId) return;
     const q = query(
