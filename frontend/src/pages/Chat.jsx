@@ -251,20 +251,7 @@ border-b-0
           </div>
         </div>
 
-        {/* RIGHT */}
-        <div className="flex items-center gap-2">
-          <motion.button
-            whileHover={{ scale: 1.06 }}
-            whileTap={{ scale: 0.92 }}
-            className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center text-slate-400 hover:text-purple-300 transition-all duration-300"
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="1"/>
-              <circle cx="19" cy="12" r="1"/>
-              <circle cx="5" cy="12" r="1"/>
-            </svg>
-          </motion.button>
-        </div>
+    
       </div>
     </motion.div>
 
