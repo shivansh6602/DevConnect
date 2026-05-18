@@ -144,17 +144,20 @@ function Navbar() {
   const navigate   = useNavigate();
 
   // ── ALL ORIGINAL LOGIC — UNCHANGED ──────────────────────────────────────────
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (!user) return;
-      const snap = await getDoc(doc(db, "users", user.uid));
-      if (snap.exists()){
-           console.log(snap.data()); // DEBUG
+ useEffect(() => {
+  const fetchUser = async () => {
+    if (!user) return;
+
+    const snap = await getDoc(doc(db, "users", user.uid));
+
+    if (snap.exists()) {
+      console.log(snap.data());
       setUserData(snap.data());
-      } setUserData(snap.data());
-    };
-    fetchUser();
-  }, [user]);
+    }
+  };
+
+  fetchUser();
+}, [user]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
