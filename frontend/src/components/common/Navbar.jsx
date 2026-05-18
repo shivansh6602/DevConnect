@@ -148,7 +148,10 @@ function Navbar() {
     const fetchUser = async () => {
       if (!user) return;
       const snap = await getDoc(doc(db, "users", user.uid));
-      if (snap.exists()) setUserData(snap.data());
+      if (snap.exists()){
+           console.log(snap.data()); // DEBUG
+      setUserData(snap.data());
+      } setUserData(snap.data());
     };
     fetchUser();
   }, [user]);
