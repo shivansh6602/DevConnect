@@ -1092,8 +1092,9 @@ function Footer() {
           <span className="text-slate-500 text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>DevConnect</span>
         </div>
         <p className="text-slate-600 text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-          © 2025 DevConnect. Built for developers, by developers.<BR>
-          By SHIVANSH DIXIT</BR>
+
+          © 2025 DevConnect. Built for developers,Crafted by SHIVANSH DIXIT.
+
         </p>
         <div className="flex gap-6 text-slate-600 text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
           {["Privacy", "Terms", "GitHub"].map((l) => (
