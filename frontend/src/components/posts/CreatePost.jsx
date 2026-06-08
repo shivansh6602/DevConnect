@@ -2,7 +2,7 @@ import React, { useState, useRef, useContext, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuthContext } from "../../context/AuthContext";
 
-// ─── tiny floating particles — same as Feed/ProfileHeader atmosphere ──────────
+
 function CardParticles() {
   const particles = useRef(
     Array.from({ length: 10 }, (_, i) => ({
@@ -26,7 +26,6 @@ function CardParticles() {
   );
 }
 
-// ─── animated shimmer sweep ───────────────────────────────────────────────────
 function ShimmerLine() {
   return (
     <motion.div
@@ -42,18 +41,18 @@ function ShimmerLine() {
   );
 }
 
-// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
+
 const CreatePost = ({ addPost }) => {
   const [title, setTitle]       = useState("");
   const [text, setText]         = useState("");
-  const [focused, setFocused]   = useState(null); // "title" | "text" | null
+  const [focused, setFocused]   = useState(null); 
   const [posting, setPosting]   = useState(false);
   const [done, setDone]         = useState(false);
   const [hovered, setHovered]   = useState(false);
   const textareaRef             = useRef(null);
   const { user }                = useContext(AuthContext);
 
-  // auto-expand textarea
+
   useEffect(() => {
     if (!textareaRef.current) return;
     textareaRef.current.style.height = "auto";
@@ -84,7 +83,7 @@ const CreatePost = ({ addPost }) => {
       onMouseLeave={() => setHovered(false)}
       className="relative mb-0"
     >
-      {/* ── Outer glow aura — same as ProfileHeader card ── */}
+     
       <motion.div
         animate={{
           opacity: isFocused ? 0.85 : hovered ? 0.6 : 0.35,
@@ -94,21 +93,21 @@ const CreatePost = ({ addPost }) => {
         className="absolute -inset-3 bg-gradient-to-br from-purple-600/25 via-pink-600/12 to-indigo-600/20 rounded-3xl blur-[28px] pointer-events-none"
       />
 
-      {/* ── Glass card ── */}
+
       <div className="relative bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl overflow-hidden transition-all duration-300 hover:border-purple-500/30">
 
-        {/* animated shimmer top line */}
+
         <ShimmerLine />
 
-        {/* floating particles */}
+  
         <CardParticles />
 
-        {/* ── User avatar row ── */}
+     
         <div className="relative flex items-center gap-3 px-5 pt-5 pb-3 border-b border-slate-800/50">
           <div className="relative flex-shrink-0">
-            {/* avatar glow */}
+      
             <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-purple-600/40 via-pink-500/30 to-indigo-600/40 blur-[8px] opacity-70" />
-            {/* gradient ring */}
+        
             <div className="relative p-[2px] rounded-full bg-gradient-to-br from-purple-500 via-pink-400 to-indigo-500">
               {user?.photoURL ? (
                 <motion.img
@@ -129,7 +128,6 @@ const CreatePost = ({ addPost }) => {
                 </motion.div>
               )}
             </div>
-            {/* online dot */}
             <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-slate-900 shadow-[0_0_7px_rgba(74,222,128,0.75)]" />
           </div>
 
@@ -144,7 +142,7 @@ const CreatePost = ({ addPost }) => {
             </p>
           </div>
 
-          {/* section label */}
+       
           <div className="ml-auto flex items-center gap-1.5">
             <span className="w-1 h-4 rounded-full bg-gradient-to-b from-purple-500 to-pink-500" />
             <span className="text-slate-500 text-[11px] font-semibold tracking-wide"
@@ -154,10 +152,10 @@ const CreatePost = ({ addPost }) => {
           </div>
         </div>
 
-        {/* ── Form ── */}
+     
         <form onSubmit={handleSubmit} className="relative px-5 pt-4 pb-5 space-y-3">
 
-          {/* Title input */}
+       
           <motion.div
             animate={{ opacity: 1 }}
             className={`relative transition-all duration-300 ${
@@ -179,7 +177,7 @@ const CreatePost = ({ addPost }) => {
               }`}
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             />
-            {/* focus ring glow strip */}
+            
             <AnimatePresence>
               {focused === "title" && (
                 <motion.div
@@ -193,7 +191,7 @@ const CreatePost = ({ addPost }) => {
             </AnimatePresence>
           </motion.div>
 
-          {/* Textarea */}
+      
           <motion.div
             animate={{ opacity: 1 }}
             className={`relative transition-all duration-300 ${
@@ -226,7 +224,7 @@ const CreatePost = ({ addPost }) => {
                 />
               )}
             </AnimatePresence>
-            {/* char counter */}
+    
             <AnimatePresence>
               {focused === "text" && (
                 <motion.span
@@ -244,10 +242,10 @@ const CreatePost = ({ addPost }) => {
             </AnimatePresence>
           </motion.div>
 
-          {/* ── Action row ── */}
+      
           <div className="flex items-center justify-between pt-1">
 
-            {/* emoji shortcuts */}
+      
             <div className="flex gap-1.5">
               {["💡", "🛠️", "🚀", "🔥"].map((emoji) => (
                 <motion.button
@@ -263,7 +261,7 @@ const CreatePost = ({ addPost }) => {
               ))}
             </div>
 
-            {/* Post button */}
+      
             <motion.button
               type="submit"
               disabled={posting || !isReady}
@@ -279,7 +277,7 @@ const CreatePost = ({ addPost }) => {
               }`}
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
-              {/* shine sweep */}
+     
               {isReady && !posting && (
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-transparent via-white/12 to-transparent -skew-x-12 pointer-events-none"

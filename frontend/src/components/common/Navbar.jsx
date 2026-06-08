@@ -5,19 +5,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ROOT CAUSE OF WHITE LINE
-// The issue is border-b with a visible border colour (even rgba) combined with
-// the page content starting immediately under the navbar. At 0 scroll the
-// border shows as a bright strip because:
-//   1. The border is painted ABOVE the page background
-//   2. When the page bg is dark but the border color differs, it pops as white
-// FIX: Use a SINGLE bottom-border that transitions opacity 0→1 on scroll.
-//      When unscrolled opacity is 0 so there is literally NO line drawn.
-//      When scrolled it fades in as a soft purple glow line.
-// ─────────────────────────────────────────────────────────────────────────────
 
-// ─── ANIMATED SWEEP LINE (bottom edge, inside navbar) ────────────────────────
 function SweepLine({ visible }) {
   return (
     <motion.div
@@ -30,7 +18,7 @@ function SweepLine({ visible }) {
         backgroundSize: "200% 100%",
       }}
     >
-      {/* sweep animation only when visible */}
+     
       {visible && (
         <motion.div
           className="absolute inset-0"
@@ -132,7 +120,7 @@ function NavItem({ to, label }) {
   );
 }
 
-// ─── MAIN NAVBAR ──────────────────────────────────────────────────────────────
+
 function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);

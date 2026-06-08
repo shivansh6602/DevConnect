@@ -5,7 +5,7 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 
-// ─── STAR FIELD ───────────────────────────────────────────────────────────────
+
 function StarField() {
   const canvasRef = useRef(null);
   const animRef = useRef(null);
@@ -112,7 +112,6 @@ function StarField() {
   );
 }
 
-// ─── STYLED INPUT ─────────────────────────────────────────────────────────────
 function Field({ label, icon, children }) {
   return (
     <motion.div
@@ -155,7 +154,6 @@ function Input({ value, onChange, placeholder, type = "text", onKeyDown }) {
   );
 }
 
-// ─── SECTION DIVIDER ──────────────────────────────────────────────────────────
 function SectionTitle({ icon, title }) {
   return (
     <div className="flex items-center gap-3 mb-5">
@@ -171,7 +169,6 @@ function SectionTitle({ icon, title }) {
   );
 }
 
-// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 const EditProfile = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -265,13 +262,13 @@ const EditProfile = () => {
       >
         <StarField />
 
-        {/* Ambient glows */}
+
         <div className="fixed top-1/4 left-1/3 w-[500px] h-[500px] bg-purple-600/15 rounded-full blur-[120px] animate-pulse pointer-events-none z-0" />
         <div className="fixed bottom-1/3 right-1/4 w-[400px] h-[400px] bg-pink-600/10 rounded-full blur-[100px] animate-pulse pointer-events-none z-0" style={{ animationDelay: "2s" }} />
 
         <div className="relative z-10 max-w-2xl mx-auto px-5 py-16">
 
-          {/* ── PAGE HEADER ── */}
+       
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -298,7 +295,6 @@ const EditProfile = () => {
               </p>
             </div>
 
-            {/* Live avatar preview */}
             {selectedAvatar && (
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -321,24 +317,24 @@ const EditProfile = () => {
             )}
           </motion.div>
 
-          {/* ── MAIN CARD ── */}
+       
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.65, delay: 0.1 }}
             className="relative"
           >
-            {/* Card glow */}
+           
             <div className="absolute -inset-3 bg-gradient-to-r from-purple-600/25 via-pink-600/15 to-indigo-600/25 rounded-3xl blur-[32px] opacity-60 pointer-events-none" />
 
             <div className="relative bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 rounded-3xl overflow-hidden">
 
-              {/* Decorative top bar */}
+         
               <div className="h-1 w-full bg-gradient-to-r from-purple-600 via-pink-500 to-indigo-600" />
 
               <div className="p-7 space-y-8">
 
-                {/* ─ IDENTITY ─ */}
+             
                 <div>
                   <SectionTitle icon="👤" title="Identity" />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -380,7 +376,7 @@ const EditProfile = () => {
                   </div>
                 </div>
 
-                {/* ─ SKILLS ─ */}
+               
                 <div>
                   <SectionTitle icon="🛠️" title="Skills" />
                   <Field label="Add skills" icon="⌨️">
@@ -427,7 +423,6 @@ const EditProfile = () => {
                   )}
                 </div>
 
-                {/* ─ LINKS ─ */}
                 <div>
                   <SectionTitle icon="🔗" title="Links" />
                   <div className="space-y-4">
@@ -452,7 +447,6 @@ const EditProfile = () => {
                   </div>
                 </div>
 
-                {/* ─ AVATAR ─ */}
                 <div>
                   <SectionTitle icon="🎨" title="Choose Avatar" />
                   <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
@@ -470,14 +464,14 @@ const EditProfile = () => {
                           }}
                           className="relative group"
                         >
-                          {/* Selection glow */}
+                         
                           {isSelected && (
                             <motion.div
                               layoutId="avatar-glow"
                               className="absolute -inset-1.5 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-indigo-500 blur-[6px] opacity-80"
                             />
                           )}
-                          {/* Ring */}
+                      
                           <div
                             className={`relative p-[2px] rounded-full transition-all duration-300 ${
                               isSelected
@@ -492,7 +486,7 @@ const EditProfile = () => {
                               className="w-full aspect-square rounded-full bg-slate-900 object-cover block"
                             />
                           </div>
-                          {/* Selected tick */}
+                     
                           {isSelected && (
                             <motion.span
                               initial={{ scale: 0 }}
@@ -508,7 +502,6 @@ const EditProfile = () => {
                   </div>
                 </div>
 
-                {/* ─ SAVE BUTTON ─ */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}

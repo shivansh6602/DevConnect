@@ -10,7 +10,7 @@ const MessageInput = ({ chatId }) => {
   const [sending, setSending] = useState(false);
   const { user }              = useContext(AuthContext);
 
-  // ── ORIGINAL LOGIC — UNCHANGED ──────────────────────────────────────────────
+  
   const sendMessage = async () => {
     if (!text.trim() || !user || !chatId) return;
     setSending(true);
@@ -28,13 +28,13 @@ const MessageInput = ({ chatId }) => {
       setSending(false);
     }
   };
-  // ── END ORIGINAL LOGIC ───────────────────────────────────────────────────────
+  
 
   const canSend = text.trim() && !sending;
 
   return (
     <div className="relative px-4 py-4">
-      {/* input glow aura */}
+  
       <motion.div
         animate={{ opacity: focused ? 0.75 : 0.2 }}
         transition={{ duration: 0.35 }}
@@ -55,7 +55,7 @@ const MessageInput = ({ chatId }) => {
             : "inset 0 1px 0 rgba(255,255,255,0.03)",
         }}
       >
-        {/* focus gradient underline */}
+        
         <AnimatePresence>
           {focused && (
             <motion.div
@@ -68,7 +68,7 @@ const MessageInput = ({ chatId }) => {
           )}
         </AnimatePresence>
 
-        {/* original input — untouched */}
+    
         <input
           type="text"
           value={text}
@@ -81,7 +81,7 @@ const MessageInput = ({ chatId }) => {
           style={{ fontFamily: "'Space Grotesk', sans-serif" }}
         />
 
-        {/* emoji quick-insert */}
+      
         <div className="flex gap-1 flex-shrink-0">
           {["⚡", "🚀"].map((e) => (
             <motion.button
@@ -97,7 +97,7 @@ const MessageInput = ({ chatId }) => {
           ))}
         </div>
 
-        {/* Send button — original onClick preserved */}
+    
         <motion.button
           whileHover={canSend ? { scale: 1.1, boxShadow: "0 0 18px rgba(147,51,234,0.5)" } : {}}
           whileTap={canSend ? { scale: 0.9 } : {}}
@@ -109,7 +109,7 @@ const MessageInput = ({ chatId }) => {
               : "bg-slate-800/50 border border-slate-700/30 text-slate-600 cursor-not-allowed"
           }`}
         >
-          {/* shine sweep */}
+     
           {canSend && (
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-transparent via-white/14 to-transparent -skew-x-12 pointer-events-none"

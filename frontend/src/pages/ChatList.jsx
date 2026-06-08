@@ -8,9 +8,7 @@ import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// STARFIELD — same as ProfileHeader / Feed / Chat
-// ─────────────────────────────────────────────────────────────────────────────
+
 function StarField() {
   const canvasRef = useRef(null);
   const animRef   = useRef(null);
@@ -124,9 +122,7 @@ function StarField() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// FLOATING PARTICLES
-// ─────────────────────────────────────────────────────────────────────────────
+
 function FloatingParticles() {
   const pts = useRef(
     Array.from({ length: 14 }, (_, i) => ({ x: 3 + i * 7, delay: i * 0.65, dur: 5 + (i % 4) }))
@@ -146,9 +142,7 @@ function FloatingParticles() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ANIMATED SWEEP TOP LINE
-// ─────────────────────────────────────────────────────────────────────────────
+
 function SweepLine() {
   return (
     <motion.div
@@ -164,9 +158,7 @@ function SweepLine() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CHAT ROW
-// ─────────────────────────────────────────────────────────────────────────────
+
 function ChatRow({ chat, index, onClick }) {
   return (
     <motion.div
@@ -178,7 +170,7 @@ function ChatRow({ chat, index, onClick }) {
       onClick={onClick}
       className="relative flex items-center gap-4 px-5 py-4 border-b border-white/[0.05] last:border-0 cursor-pointer group transition-all duration-300"
     >
-      {/* row hover glow */}
+
       <motion.div
         className="absolute inset-0 pointer-events-none"
         initial={{ opacity: 0 }}
@@ -189,7 +181,7 @@ function ChatRow({ chat, index, onClick }) {
             "linear-gradient(90deg,rgba(147,51,234,0.07) 0%,rgba(244,114,182,0.04) 60%,transparent 100%)",
         }}
       />
-      {/* subtle left accent on hover */}
+      
       <motion.div
         className="absolute left-0 top-3 bottom-3 w-[2px] rounded-full pointer-events-none"
         initial={{ opacity: 0, scaleY: 0 }}
@@ -198,11 +190,11 @@ function ChatRow({ chat, index, onClick }) {
         style={{ background: "linear-gradient(to bottom,#a855f7,#ec4899)" }}
       />
 
-      {/* ── Avatar ── */}
+      
       <div className="relative flex-shrink-0">
-        {/* hover glow ring */}
+    
         <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-purple-600/30 to-indigo-600/30 blur-[6px] opacity-0 group-hover:opacity-80 transition-opacity duration-300" />
-        {/* gradient ring — fades in on hover */}
+      
         <div className="relative p-[2.5px] rounded-full transition-all duration-400"
           style={{
             background: "linear-gradient(135deg,#475569,#475569)",
@@ -229,11 +221,11 @@ function ChatRow({ chat, index, onClick }) {
             )}
           </div>
         </div>
-        {/* online dot */}
+
         <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-[#0b0b1a] shadow-[0_0_7px_rgba(74,222,128,0.75)]" />
       </div>
 
-      {/* ── Info ── */}
+  
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-0.5">
           <p
@@ -259,7 +251,7 @@ function ChatRow({ chat, index, onClick }) {
         </p>
       </div>
 
-      {/* ── Chevron ── */}
+
       <motion.svg
         className="text-slate-700 group-hover:text-purple-400 flex-shrink-0 transition-colors duration-200"
         animate={{ x: 0 }}
@@ -273,15 +265,11 @@ function ChatRow({ chat, index, onClick }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN COMPONENT
-// ─────────────────────────────────────────────────────────────────────────────
 const ChatList = () => {
   const [chats, setChats] = useState([]);
   const { user }          = useContext(AuthContext);
   const navigate          = useNavigate();
 
-  // ── ALL ORIGINAL FIREBASE LOGIC — UNCHANGED ─────────────────────────────────
   useEffect(() => {
     if (!user) return;
     const q = query(
@@ -307,7 +295,6 @@ const ChatList = () => {
     });
     return () => unsubscribe();
   }, [user]);
-  // ── END ORIGINAL LOGIC ───────────────────────────────────────────────────────
 
   return (
     <>
@@ -320,7 +307,7 @@ const ChatList = () => {
         .chat-scroll::-webkit-scrollbar-thumb:hover { background: rgba(168,85,247,0.45); }
       `}</style>
 
-      {/* ── Cosmic page shell — same bg as every other page ── */}
+    
       <div
         className="min-h-screen relative overflow-x-hidden flex items-start justify-center py-12 px-4"
         style={{ background: "linear-gradient(to bottom right, #0f0c29, #302b63, #24243e)" }}
@@ -328,27 +315,23 @@ const ChatList = () => {
         <StarField />
         <FloatingParticles />
 
-        {/* Ambient glow blobs */}
         <div className="fixed top-1/4 left-1/4 w-[500px] h-[500px] bg-purple-600/15 rounded-full blur-[120px] animate-pulse pointer-events-none z-0" />
         <div
           className="fixed bottom-1/4 right-1/4 w-[400px] h-[400px] bg-pink-600/10 rounded-full blur-[100px] animate-pulse pointer-events-none z-0"
           style={{ animationDelay: "2s" }}
         />
 
-        {/* ════════════════════════════════════════════════════════
-            THE CENTERED GLASSMORPHISM CONTAINER
-        ════════════════════════════════════════════════════════ */}
+
         <motion.div
           initial={{ opacity: 0, y: 32, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.65, ease: [0.23, 1, 0.32, 1] }}
           className="relative z-10 w-full max-w-md"
         >
-          {/* ── Multi-layer outer glow aura ── */}
+
           <div className="absolute -inset-6 rounded-[3rem] bg-gradient-to-br from-purple-600/20 via-pink-600/10 to-indigo-600/18 blur-[40px] pointer-events-none" />
           <div className="absolute -inset-3 rounded-[2.5rem] bg-gradient-to-br from-purple-600/12 via-transparent to-indigo-600/10 blur-[20px] pointer-events-none" />
 
-          {/* ── Glass card ── */}
           <div
             className="relative overflow-hidden"
             style={{
@@ -361,10 +344,10 @@ const ChatList = () => {
                 "0 0 0 1px rgba(147,51,234,0.08), 0 32px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06)",
             }}
           >
-            {/* animated sweep top line */}
+      
             <SweepLine />
 
-            {/* inner top shimmer highlight */}
+         
             <div
               className="absolute top-0 left-0 right-0 h-24 pointer-events-none"
               style={{
@@ -373,7 +356,7 @@ const ChatList = () => {
               }}
             />
 
-            {/* ── HEADER ── */}
+    
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -395,7 +378,7 @@ const ChatList = () => {
                 </p>
               </div>
 
-              {/* live indicator */}
+          
               <div
                 className="flex items-center gap-2 px-3 py-1.5 rounded-full border"
                 style={{
@@ -414,15 +397,14 @@ const ChatList = () => {
               </div>
             </motion.div>
 
-            {/* header separator */}
             <div className="mx-5 h-px bg-gradient-to-r from-transparent via-slate-700/40 to-transparent" />
 
-            {/* ── CHAT LIST — scrollable ── */}
+         
             <div
               className="chat-scroll overflow-y-auto"
               style={{ maxHeight: "min(520px, 60vh)" }}
             >
-              {/* Empty state */}
+             
               <AnimatePresence>
                 {chats.length === 0 && (
                   <motion.div
@@ -469,7 +451,7 @@ const ChatList = () => {
                 )}
               </AnimatePresence>
 
-              {/* Chat rows */}
+          
               <AnimatePresence>
                 {chats.map((chat, i) => (
                   <ChatRow
@@ -482,7 +464,6 @@ const ChatList = () => {
               </AnimatePresence>
             </div>
 
-            {/* ── FOOTER ── */}
             {chats.length > 0 && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -500,7 +481,6 @@ const ChatList = () => {
               </motion.div>
             )}
 
-            {/* ── bottom inner glow ── */}
             <div
               className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none"
               style={{

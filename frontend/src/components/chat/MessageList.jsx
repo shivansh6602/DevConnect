@@ -4,7 +4,7 @@ import { db } from "../../firebase";
 import { AuthContext } from "../../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
-// ─── SINGLE MESSAGE BUBBLE — same style as ChatBox ───────────────────────────
+
 function MessageBubble({ msg, isOwn, index }) {
   return (
     <motion.div
@@ -19,7 +19,7 @@ function MessageBubble({ msg, isOwn, index }) {
         className="relative max-w-[72%]"
       >
         {isOwn ? (
-          // Sender — gradient glass
+        
           <div className="relative">
             <div className="absolute -inset-1 bg-gradient-to-r from-purple-600/30 via-pink-500/20 to-indigo-600/30 rounded-2xl blur-[8px] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <div
@@ -42,7 +42,7 @@ function MessageBubble({ msg, isOwn, index }) {
                   style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                   {msg.createdAt?.toDate?.()?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) ?? ""}
                 </span>
-                {/* seen / delivered */}
+               
                 {msg.seen ? (
                   <motion.div
                     initial={{ scale: 0.5, opacity: 0 }}
@@ -66,7 +66,7 @@ function MessageBubble({ msg, isOwn, index }) {
             </div>
           </div>
         ) : (
-          // Receiver — dark translucent glass
+          
           <div className="relative">
             <div className="absolute -inset-1 bg-slate-600/10 rounded-2xl blur-[6px] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <div
@@ -96,13 +96,11 @@ function MessageBubble({ msg, isOwn, index }) {
   );
 }
 
-// ─── MAIN ─────────────────────────────────────────────────────────────────────
 const MessageList = ({ chatId }) => {
   const [messages, setMessages] = useState([]);
   const { user }                = useContext(AuthContext);
   const bottomRef               = useRef(null);
 
-  // ── ALL ORIGINAL LOGIC — UNCHANGED ──────────────────────────────────────────
   useEffect(() => {
     if (!chatId) return;
     const q = query(collection(db, "chats", chatId, "messages"), orderBy("createdAt"));
@@ -130,7 +128,7 @@ const MessageList = ({ chatId }) => {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-  // ── END ORIGINAL LOGIC ───────────────────────────────────────────────────────
+  
 
   return (
     <div

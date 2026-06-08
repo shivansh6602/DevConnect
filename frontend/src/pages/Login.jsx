@@ -10,7 +10,6 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { motion, AnimatePresence } from "framer-motion";
 
-// ─── STARFIELD ────────────────────────────────────────────────────────────────
 function StarField() {
   const canvasRef = useRef(null);
   const animRef   = useRef(null);
@@ -115,7 +114,6 @@ function StarField() {
   return <canvas ref={canvasRef} className="fixed inset-0 w-full h-full pointer-events-none z-0" />;
 }
 
-// ─── FLOATING PARTICLES ───────────────────────────────────────────────────────
 function FloatingParticles() {
   const pts = useRef(Array.from({ length: 20 }, (_, i) => ({ x: 2 + i * 5, delay: i * 0.5, dur: 4 + (i % 5) })));
   return (
@@ -131,25 +129,24 @@ function FloatingParticles() {
   );
 }
 
-// ─── ORB DECORATION — floating glowing orbs around card ──────────────────────
 function FloatingOrbs() {
   return (
     <>
-      {/* top-left orb */}
+      
       <motion.div
         className="absolute -top-8 -left-8 w-20 h-20 rounded-full pointer-events-none"
         style={{ background: "radial-gradient(circle, rgba(168,85,247,0.35) 0%, transparent 70%)", filter: "blur(12px)" }}
         animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.9, 0.5] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
       />
-      {/* top-right orb */}
+     
       <motion.div
         className="absolute -top-6 -right-8 w-16 h-16 rounded-full pointer-events-none"
         style={{ background: "radial-gradient(circle, rgba(244,114,182,0.3) 0%, transparent 70%)", filter: "blur(10px)" }}
         animate={{ scale: [1.2, 1, 1.2], opacity: [0.4, 0.8, 0.4] }}
         transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
       />
-      {/* bottom orb */}
+
       <motion.div
         className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-24 h-10 rounded-full pointer-events-none"
         style={{ background: "radial-gradient(circle, rgba(99,102,241,0.25) 0%, transparent 70%)", filter: "blur(14px)" }}
@@ -160,7 +157,6 @@ function FloatingOrbs() {
   );
 }
 
-// ─── SWEEP LINE ───────────────────────────────────────────────────────────────
 function SweepLine() {
   return (
     <motion.div
@@ -175,7 +171,6 @@ function SweepLine() {
   );
 }
 
-// ─── DEVCONNECT LOGO MARK ─────────────────────────────────────────────────────
 function LogoMark() {
   return (
     <motion.div
@@ -184,7 +179,7 @@ function LogoMark() {
       transition={{ duration: 0.7, delay: 0.3, ease: [0.23, 1, 0.32, 1] }}
       className="flex flex-col items-center gap-3 mb-7"
     >
-      {/* icon */}
+
       <motion.div
         animate={{ boxShadow: ["0 0 20px rgba(147,51,234,0.4)", "0 0 40px rgba(147,51,234,0.65)", "0 0 20px rgba(147,51,234,0.4)"] }}
         transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
@@ -197,7 +192,7 @@ function LogoMark() {
         </svg>
       </motion.div>
 
-      {/* wordmark */}
+
       <div className="text-center">
         <h1 className="text-2xl font-extrabold tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
           <span className="text-white">Dev</span>
@@ -211,9 +206,8 @@ function LogoMark() {
   );
 }
 
-// ─── MAIN ─────────────────────────────────────────────────────────────────────
 const Login = () => {
-  // ── ALL ORIGINAL STATE & LOGIC — UNCHANGED ──────────────────────────────────
+
   const [email,    setEmail]    = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -246,11 +240,12 @@ const Login = () => {
       }
       navigate("/feed");
     } catch (error) {
-      console.error(error);
-      alert("Google sign-in failed");
-    }
+ 
+
+  alert(error.message);
+}
   };
-  // ── END ORIGINAL LOGIC ───────────────────────────────────────────────────────
+
 
   const [inputFocus, setInputFocus] = useState(null);
 
@@ -270,19 +265,16 @@ const Login = () => {
         <StarField />
         <FloatingParticles />
 
-        {/* Ambient glow blobs */}
         <div className="fixed top-1/4 left-1/4 w-[520px] h-[520px] bg-purple-600/14 rounded-full blur-[130px] animate-pulse pointer-events-none z-0" />
         <div className="fixed bottom-1/4 right-1/4 w-[420px] h-[420px] bg-pink-600/9 rounded-full blur-[110px] animate-pulse pointer-events-none z-0" style={{ animationDelay: "2s" }} />
         <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-indigo-600/6 rounded-full blur-[90px] animate-pulse pointer-events-none z-0" style={{ animationDelay: "1s" }} />
 
-        {/* ── Main card assembly ── */}
         <motion.div
           initial={{ opacity: 0, y: 40, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
           className="relative z-10 w-full max-w-[400px]"
         >
-          {/* multi-layer glow aura */}
           <motion.div
             animate={{ opacity: [0.5, 0.8, 0.5] }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -291,7 +283,6 @@ const Login = () => {
           />
           <div className="absolute -inset-3 bg-gradient-to-br from-purple-600/15 via-pink-600/8 to-indigo-600/12 rounded-[2.5rem] blur-[18px] pointer-events-none" />
 
-          {/* glass card */}
           <div
             className="relative overflow-hidden"
             style={{
@@ -306,16 +297,13 @@ const Login = () => {
             <SweepLine />
             <FloatingOrbs />
 
-            {/* inner shimmer */}
             <div className="absolute top-0 left-0 right-0 h-32 pointer-events-none"
               style={{ background: "linear-gradient(to bottom, rgba(147,51,234,0.08) 0%, transparent 100%)" }} />
 
             <div className="relative px-8 pt-9 pb-8">
 
-              {/* Logo + title */}
               <LogoMark />
 
-              {/* Section label */}
               <div className="flex items-center gap-2 mb-5">
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-700/50 to-transparent" />
                 <span className="text-slate-600 text-[10px] uppercase tracking-[0.2em] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -324,10 +312,8 @@ const Login = () => {
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-700/50 to-transparent" />
               </div>
 
-              {/* Form — all handlers untouched */}
               <form onSubmit={handleSubmit} className="space-y-3">
 
-                {/* Email */}
                 <motion.div
                   animate={inputFocus === "email" ? { scale: 1.01 } : { scale: 1 }}
                   transition={{ duration: 0.2 }}
@@ -353,7 +339,7 @@ const Login = () => {
                   </AnimatePresence>
                 </motion.div>
 
-                {/* Password */}
+               
                 <motion.div
                   animate={inputFocus === "password" ? { scale: 1.01 } : { scale: 1 }}
                   transition={{ duration: 0.2 }}
@@ -379,7 +365,7 @@ const Login = () => {
                   </AnimatePresence>
                 </motion.div>
 
-                {/* Login button */}
+               
                 <motion.button
                   type="submit"
                   whileHover={{ scale: 1.03, boxShadow: "0 0 30px rgba(147,51,234,0.55)" }}
@@ -391,7 +377,7 @@ const Login = () => {
                     fontFamily: "'Space Grotesk', sans-serif",
                   }}
                 >
-                  {/* shine sweep */}
+                
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/16 to-transparent -skew-x-12 pointer-events-none"
                     animate={{ x: ["-150%", "200%"] }}
@@ -405,14 +391,13 @@ const Login = () => {
                   </span>
                 </motion.button>
 
-                {/* Divider */}
+           
                 <div className="flex items-center gap-3 py-0.5">
                   <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-800/80 to-transparent" />
                   <span className="text-slate-600 text-[11px]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>or continue with</span>
                   <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-800/80 to-transparent" />
                 </div>
 
-                {/* Google button */}
                 <motion.button
                   type="button"
                   onClick={handleGoogleLogin}
@@ -430,7 +415,7 @@ const Login = () => {
                   Continue with Google
                 </motion.button>
 
-                {/* Register link */}
+             
                 <p className="text-sm text-center pt-2 text-slate-500" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                   Don't have an account?{" "}
                   <Link to="/register" className="text-purple-400 font-semibold hover:text-purple-300 transition-colors">
@@ -440,7 +425,7 @@ const Login = () => {
               </form>
             </div>
 
-            {/* bottom glow */}
+          
             <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
               style={{ background: "linear-gradient(to top, rgba(147,51,234,0.06) 0%, transparent 100%)" }} />
           </div>

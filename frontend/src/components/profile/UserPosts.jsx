@@ -16,7 +16,7 @@ const UserPosts = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      {/* ── Section header ── */}
+  
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
           <div className="w-0.5 h-5 rounded-full bg-gradient-to-b from-purple-500 to-pink-500 flex-shrink-0" />
@@ -46,7 +46,7 @@ const UserPosts = ({
         )}
       </div>
 
-      {/* ── Empty state ── */}
+   
       <AnimatePresence>
         {posts.length === 0 && (
           <motion.div
@@ -56,7 +56,6 @@ const UserPosts = ({
             transition={{ duration: 0.45 }}
             className="relative bg-slate-900/40 backdrop-blur-md border border-slate-800/50 border-dashed rounded-2xl py-14 flex flex-col items-center gap-3 overflow-hidden"
           >
-            {/* radial glow */}
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,rgba(147,51,234,0.06)_0%,transparent_65%)] pointer-events-none" />
 
             <motion.div
@@ -85,7 +84,7 @@ const UserPosts = ({
         )}
       </AnimatePresence>
 
-      {/* ── Post list ── */}
+
       <AnimatePresence>
         {posts.length > 0 && (
           <motion.div

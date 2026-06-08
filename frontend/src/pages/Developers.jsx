@@ -5,10 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// STARFIELD — identical to ProfileHeader / Feed
-// 260 twinkling stars + 5 purple-300 shooting stars + scroll parallax
-// ─────────────────────────────────────────────────────────────────────────────
+
 function StarField() {
   const canvasRef  = useRef(null);
   const animRef    = useRef(null);
@@ -29,9 +26,8 @@ function StarField() {
     resize();
     window.addEventListener("resize", resize);
 
-    // ── 260 twinkling white stars ──
     starsRef.current = Array.from({ length: 260 }, () => {
-      const dur = Math.random() * 3 + 1.5;          // 1.5 – 4.5 s
+      const dur = Math.random() * 3 + 1.5;          
       return {
         x: Math.random() * window.innerWidth,
         y: Math.random() * window.innerHeight * 2.5,
@@ -44,7 +40,7 @@ function StarField() {
       };
     });
 
-    // ── 5 shooting stars (purple-300 #d8b4fe tail) ──
+  
     const mkShooter = (stagger) => ({
       x: 0, y: 0,
       angle: (Math.PI / 180) * (30 + Math.random() * 12),
@@ -69,7 +65,7 @@ function StarField() {
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // stars
+  
       starsRef.current.forEach((s) => {
         if (s.delayFrames > 0) { s.delayFrames--; return; }
         s.alpha += s.dAlpha;
@@ -87,7 +83,7 @@ function StarField() {
         ctx.restore();
       });
 
-      // shooting stars
+
       shootRef.current.forEach((sh) => {
         if (sh.phase === "wait") {
           if (++sh.waitCounter >= sh.waitFrames) { sh.waitCounter = 0; respawn(sh); }
@@ -109,7 +105,7 @@ function StarField() {
         const ty = sh.y - Math.sin(sh.angle) * sh.len;
         const g  = ctx.createLinearGradient(tx, ty, sh.x, sh.y);
         g.addColorStop(0,    "rgba(255,255,255,0)");
-        g.addColorStop(0.5,  `rgba(216,180,254,${sh.alpha * 0.6})`);  // purple-300
+        g.addColorStop(0.5,  `rgba(216,180,254,${sh.alpha * 0.6})`);  
         g.addColorStop(0.85, `rgba(216,180,254,${sh.alpha})`);
         g.addColorStop(1,    `rgba(216,180,254,${sh.alpha * 0.15})`);
         ctx.save();
@@ -138,9 +134,6 @@ function StarField() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// FLOATING PARTICLES — tiny purple drifting dots, same as Feed
-// ─────────────────────────────────────────────────────────────────────────────
 function FloatingParticles() {
   const particles = useRef(
     Array.from({ length: 16 }, (_, i) => ({
@@ -164,9 +157,6 @@ function FloatingParticles() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ANIMATED SHIMMER TOP LINE — same as CreatePost / Post cards
-// ─────────────────────────────────────────────────────────────────────────────
 function ShimmerLine() {
   return (
     <motion.div
@@ -182,9 +172,6 @@ function ShimmerLine() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN COMPONENT — all original logic preserved exactly
-// ─────────────────────────────────────────────────────────────────────────────
 const Developers = () => {
   const navigate = useNavigate();
   const { user: currentUser } = useContext(AuthContext);
@@ -192,7 +179,7 @@ const Developers = () => {
   const [users, setUsers]   = useState([]);
   const [search, setSearch] = useState("");
 
-  // ── ORIGINAL LOGIC — UNCHANGED ────────────────────────────────────────────
+  
   useEffect(() => {
     const fetchUsers = async () => {
       let q;
@@ -237,7 +224,7 @@ const Developers = () => {
       </div>
     );
   }
-  // ── END ORIGINAL LOGIC ───────────────────────────────────────────────────
+
 
   return (
     <>
@@ -252,13 +239,12 @@ const Developers = () => {
         className="min-h-screen relative overflow-x-hidden"
         style={{ background: "linear-gradient(to bottom right, #0f0c29, #302b63, #24243e)" }}
       >
-        {/* ── Starfield canvas + parallax ── */}
+       
         <StarField />
 
-        {/* ── Floating particles ── */}
         <FloatingParticles />
 
-        {/* ── Ambient glow blobs — identical to ProfileHeader / Feed ── */}
+       
         <div className="fixed top-1/4 left-1/4 w-[500px] h-[500px] bg-purple-600/15 rounded-full blur-[120px] animate-pulse pointer-events-none z-0" />
         <div
           className="fixed bottom-1/4 right-1/4 w-[400px] h-[400px] bg-pink-600/10 rounded-full blur-[100px] animate-pulse pointer-events-none z-0"
@@ -267,7 +253,7 @@ const Developers = () => {
 
         <div className="relative z-10 max-w-3xl mx-auto px-5 py-12">
 
-          {/* ── Page Header ── */}
+    
           <motion.div
             initial={{ opacity: 0, y: -18 }}
             animate={{ opacity: 1, y: 0 }}
@@ -302,14 +288,14 @@ const Developers = () => {
             </div>
           </motion.div>
 
-          {/* ── Search Bar ── */}
+       
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.12 }}
             className="relative mb-7 group"
           >
-            {/* focus aura */}
+            
             <div className="absolute -inset-2 bg-gradient-to-r from-purple-600/15 via-pink-600/8 to-indigo-600/15 rounded-3xl blur-[18px] opacity-0 group-focus-within:opacity-100 transition-opacity duration-400 pointer-events-none" />
 
             <div className="relative bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 group-focus-within:border-purple-500/50 rounded-2xl overflow-hidden transition-all duration-300">
@@ -326,7 +312,7 @@ const Developers = () => {
                   <path d="m21 21-4.35-4.35" />
                 </motion.svg>
 
-                {/* original input — untouched */}
+              
                 <input
                   type="text"
                   placeholder="Search developers by username…"
@@ -356,7 +342,7 @@ const Developers = () => {
             </div>
           </motion.div>
 
-          {/* ── Empty state ── */}
+        
           <AnimatePresence>
             {users.length === 0 && (
               <motion.div
@@ -388,7 +374,7 @@ const Developers = () => {
             )}
           </AnimatePresence>
 
-          {/* ── Developer cards ── */}
+        
           <AnimatePresence>
             {users.length > 0 && (
               <motion.div
@@ -407,12 +393,11 @@ const Developers = () => {
                     whileHover={{ y: -4 }}
                     className="relative group"
                   >
-                    {/* card hover glow aura */}
+                    
                     <div className="absolute -inset-2 bg-gradient-to-br from-purple-600/18 via-pink-600/8 to-indigo-600/15 rounded-3xl blur-[22px] opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none" />
 
                     <div className="relative bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 group-hover:border-purple-500/35 rounded-2xl overflow-hidden transition-all duration-300">
 
-                      {/* animated gradient top line — same as Post/CreatePost */}
                       <motion.div
                         className="h-0.5 w-full pointer-events-none"
                         style={{
@@ -424,16 +409,15 @@ const Developers = () => {
                         transition={{ duration: 4 + i * 0.3, repeat: Infinity, ease: "linear" }}
                       />
 
-                      {/* inner radial shimmer */}
                       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(147,51,234,0.04)_0%,transparent_55%)] pointer-events-none" />
 
                       <div className="relative flex items-center gap-4 px-5 py-4">
 
-                        {/* ── Avatar — same gradient ring + glow as ProfileHeader ── */}
+                       
                         <div className="relative flex-shrink-0">
-                          {/* glow ring */}
+                       
                           <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-purple-600/40 via-pink-500/30 to-indigo-600/40 blur-[7px] opacity-0 group-hover:opacity-80 transition-opacity duration-300" />
-                          {/* gradient border */}
+                   
                           <div className="relative p-[2.5px] rounded-full bg-gradient-to-br from-slate-600 via-slate-600 to-slate-600 group-hover:from-purple-500 group-hover:via-pink-400 group-hover:to-indigo-500 transition-all duration-400">
                             {u.avatar ? (
                               <motion.img
@@ -452,11 +436,11 @@ const Developers = () => {
                               </div>
                             )}
                           </div>
-                          {/* online dot */}
+             
                           <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-slate-900 shadow-[0_0_8px_rgba(74,222,128,0.75)]" />
                         </div>
 
-                        {/* ── Info ── */}
+
                         <div className="flex-1 min-w-0">
                           <p
                             className="text-white text-sm font-semibold leading-none mb-0.5 truncate"
@@ -480,7 +464,6 @@ const Developers = () => {
                             </p>
                           )}
 
-                          {/* skill pills */}
                           {u.skills?.length > 0 && (
                             <div className="flex flex-wrap gap-1">
                               {u.skills.slice(0, 3).map((sk) => (
@@ -505,9 +488,9 @@ const Developers = () => {
                           )}
                         </div>
 
-                        {/* ── Action buttons ── */}
+                   
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          {/* View Profile — gradient button */}
+                  
                           <motion.button
                             whileHover={{ scale: 1.07, boxShadow: "0 0 18px rgba(147,51,234,0.45)" }}
                             whileTap={{ scale: 0.93 }}
@@ -515,7 +498,7 @@ const Developers = () => {
                             className="relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white overflow-hidden bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/40 transition-all duration-300"
                             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                           >
-                            {/* shine sweep */}
+                  
                             <motion.div
                               className="absolute inset-0 bg-gradient-to-r from-transparent via-white/12 to-transparent -skew-x-12 pointer-events-none"
                               animate={{ x: ["-150%", "200%"] }}
@@ -528,7 +511,7 @@ const Developers = () => {
                             View
                           </motion.button>
 
-                          {/* Chat — glass ghost button */}
+                  
                           {u.id !== currentUser.uid && (
                             <motion.button
                               whileHover={{ scale: 1.07, borderColor: "rgba(99,102,241,0.5)" }}

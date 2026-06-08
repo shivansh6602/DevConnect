@@ -4,7 +4,6 @@ import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
-// ─── MOCK DATA ────────────────────────────────────────────────────────────────
 const SAMPLE_POSTS = [
   {
     id: 1,
@@ -105,12 +104,7 @@ const ANIMATED_LINES = [
   "Chat. Post. Grow.",
 ];
 
-// ─── STAR FIELD ───────────────────────────────────────────────────────────────
-// Design system spec:
-//   Stars: 300, size 0.5–3px, white, opacity [0.1→1→0.1], scale [1→1.3→1], 1.5–4.5s, delay 0–3s
-//   Shooting stars: 5, 80px wide, 1.5px tall, purple-300 (#d8b4fe) centre gradient,
-//                   30–40° angle, 2–3s duration, 4–6s repeat-delay
-//   Parallax: star container moves y 0 → -100 on scroll
+
 function StarField() {
   const canvasRef = useRef(null);
   const animFrame = useRef(null);
@@ -131,14 +125,14 @@ function StarField() {
     resize();
     window.addEventListener("resize", resize);
 
-    // 300 stars — white, opacity/scale twinkle per design system
+   
     starsRef.current = Array.from({ length: 300 }, () => {
-      const dur = Math.random() * 3 + 1.5;           // 1.5–4.5s
-      const delay = Math.random() * 3;                // 0–3s
+      const dur = Math.random() * 3 + 1.5;         
+      const delay = Math.random() * 3;               
       return {
         x: Math.random() * window.innerWidth,
         y: Math.random() * window.innerHeight * 2,
-        r: (Math.random() * 2.5 + 0.5) / 2,          // radius from 0.5–3px diameter
+        r: (Math.random() * 2.5 + 0.5) / 2,      
         alpha: Math.random(),
         dAlpha: 0.006 / dur * (Math.random() > 0.5 ? 1 : -1),
         scaleT: Math.random() * Math.PI * 2,
@@ -147,10 +141,9 @@ function StarField() {
       };
     });
 
-    // 5 shooting stars per design system
     const mkShooter = (stagger = 0) => {
-      const angle = Math.PI / 180 * (30 + Math.random() * 10); // 30–40°
-      const waitFrames = Math.floor((4 + Math.random() * 2) * 60); // 4–6s
+      const angle = Math.PI / 180 * (30 + Math.random() * 10); 
+      const waitFrames = Math.floor((4 + Math.random() * 2) * 60); 
       return {
         x: 0, y: 0,
         angle,
@@ -176,14 +169,13 @@ function StarField() {
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // ── Stars
       starsRef.current.forEach((s) => {
         if (s.delayFrames > 0) { s.delayFrames--; return; }
-        // opacity cycle [0.1 → 1 → 0.1]
+      
         s.alpha += s.dAlpha;
         if (s.alpha >= 1)   { s.alpha = 1;   s.dAlpha *= -1; }
         if (s.alpha <= 0.1) { s.alpha = 0.1; s.dAlpha *= -1; }
-        // scale cycle [1 → 1.3 → 1]
+      
         s.scaleT += s.scaleDelta;
         const scale = 1 + 0.3 * Math.abs(Math.sin(s.scaleT));
         ctx.save();
@@ -196,7 +188,6 @@ function StarField() {
         ctx.restore();
       });
 
-      // ── Shooting stars
       shootersRef.current.forEach((sh) => {
         if (sh.phase === "wait") {
           sh.waitCounter++;
@@ -224,18 +215,18 @@ function StarField() {
         const tailX = sh.x - Math.cos(sh.angle) * sh.len;
         const tailY = sh.y - Math.sin(sh.angle) * sh.len;
 
-        // Design system gradient: transparent → #d8b4fe (purple-300) → transparent
+
         const grad = ctx.createLinearGradient(tailX, tailY, sh.x, sh.y);
         grad.addColorStop(0, "rgba(255,255,255,0)");
-        grad.addColorStop(0.45, `rgba(216,180,254,${sh.alpha * 0.6})`);  // purple-300
+        grad.addColorStop(0.45, `rgba(216,180,254,${sh.alpha * 0.6})`); 
         grad.addColorStop(0.75, `rgba(216,180,254,${sh.alpha})`);
         grad.addColorStop(1,    `rgba(216,180,254,${sh.alpha * 0.2})`);
 
         ctx.save();
         ctx.strokeStyle = grad;
-        ctx.lineWidth = 1.5;                          // design system: 1.5px
+        ctx.lineWidth = 1.5;                     
         ctx.shadowBlur = 12;
-        ctx.shadowColor = "rgba(192,132,252,0.5)";   // purple-400/50 per design system
+        ctx.shadowColor = "rgba(192,132,252,0.5)";   
         ctx.beginPath();
         ctx.moveTo(tailX, tailY);
         ctx.lineTo(sh.x, sh.y);
@@ -260,180 +251,7 @@ function StarField() {
   );
 }
 
-// // ─── NAVBAR ───────────────────────────────────────────────────────────────────
-// function Navbar() {
-//   const [scrolled, setScrolled] = useState(false);
-//   const [menuOpen, setMenuOpen] = useState(false);
-//   const [dropOpen, setDropOpen] = useState(false);
 
-//   const { user, logout } = useContext(AuthContext);
-// const isLoggedIn = !!user;
-//   const navigate = useNavigate();
-
-//   useEffect(() => {
-//     const onScroll = () => setScrolled(window.scrollY > 20);
-//     window.addEventListener("scroll", onScroll);
-//     return () => window.removeEventListener("scroll", onScroll);
-//   }, []);
-
-// const NAV_LINKS_GUEST = ["Home"];
-// const NAV_LINKS_USER = ["Feed", "Developers", "Chat", "Profile"];
-
-// const links = isLoggedIn ? NAV_LINKS_USER : NAV_LINKS_GUEST;
-//         const routeMap = {
-//   Home: "/",
-//   Feed: "/feed",
-//   Developers: "/developers",
-//   Chat: "/chat",
-//   Profile: "/profile",
-// };
-//   return (
-//     <motion.nav
-//       initial={{ y: -80, opacity: 0 }}
-//       animate={{ y: 0, opacity: 1 }}
-//       transition={{ duration: 0.7, ease: "easeOut" }}
-//       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-//         scrolled
-//           ? "bg-slate-900/80 backdrop-blur-xl border-b border-slate-700/50 shadow-lg shadow-purple-500/10"
-//           : "bg-transparent"
-//       }`}
-//     >
-//       <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
-//         {/* Logo */}
-//         <motion.div whileHover={{ scale: 1.04 }} className="flex items-center gap-2.5 cursor-pointer">
-//           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-[0_0_16px_rgba(147,51,234,0.5)]">
-//             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-//               <path d="M8 1L14 4.5V11.5L8 15L2 11.5V4.5L8 1Z" stroke="white" strokeWidth="1.5" fill="none"/>
-//               <circle cx="8" cy="8" r="2" fill="white"/>
-//             </svg>
-//           </div>
-//           <span className="text-white font-bold text-lg tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-//             Dev<span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">Connect</span>
-//           </span>
-//         </motion.div>
-
-//         {/* Desktop links */}
-//         <div className="hidden md:flex items-center gap-1">
- 
-
-// {links.map((link) => (
-//   <motion.div key={link} whileHover={{ scale: 1.05 }}>
-//     <Link
-//       to={routeMap[link]}
-//       className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-//         link === "Feed" || link === "Home"
-//           ? "text-purple-300 bg-purple-600/10 border border-purple-500/20"
-//           : "text-slate-400 hover:text-white hover:bg-slate-800/60"
-//       }`}
-//     >
-//       {link}
-//     </Link>
-//   </motion.div>
-// ))}
-//         </div>
-
-//         {/* Right side */}
-//         <div className="hidden md:flex items-center gap-3">
-//           {isLoggedIn ? (
-//             <>
-//               <motion.button whileHover={{ scale: 1.1 }} className="relative w-9 h-9 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700/50 flex items-center justify-center text-slate-400 hover:text-white transition-all">
-//                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-//                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-//                   <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-//                 </svg>
-//                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-pink-500 rounded-full ring-1 ring-[#0f0c29]" />
-//               </motion.button>
-
-//               <div className="relative">
-//                 <motion.button
-//                   whileHover={{ scale: 1.05 }}
-//                   onClick={() => setDropOpen(!dropOpen)}
-//                   className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700/50 transition-all"
-//                 >
-//                   <img src="https://api.dicebear.com/7.x/bottts/svg?seed=me&backgroundColor=1a1a3e" className="w-7 h-7 rounded-lg" alt="avatar" />
-//                   <span className="text-slate-300 text-sm font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Shivansh</span>
-//                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-500">
-//                     <path d="M6 9l6 6 6-6"/>
-//                   </svg>
-//                 </motion.button>
-//                 <AnimatePresence>
-//                   {dropOpen && (
-//                     <motion.div
-//                       initial={{ opacity: 0, y: 8, scale: 0.96 }}
-//                       animate={{ opacity: 1, y: 0, scale: 1 }}
-//                       exit={{ opacity: 0, y: 8, scale: 0.96 }}
-//                       className="absolute right-0 top-12 w-44 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden"
-//                     >
-//                       {["Profile", "Settings", "Sign Out"].map((item) => (
-//                         <button
-//                           key={item}
-//                           onClick={() => { if (item === "Sign Out") {
-//   logout();
-// navigate("/login");
-// }
-// if (item === "Profile") navigate("/profile"); setDropOpen(false); }}
-//                           className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${item === "Sign Out" ? "text-pink-400 hover:bg-pink-600/10" : "text-slate-400 hover:text-white hover:bg-slate-800/60"}`}
-//                           style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-//                         >
-//                           {item}
-//                         </button>
-//                       ))}
-//                     </motion.div>
-//                   )}
-//                 </AnimatePresence>
-//               </div>
-//             </>
-//           ) : (
-//             <>
-//               <motion.button
-//                 whileHover={{ scale: 1.05 }}
-//                onClick={() => navigate("/login")}
-//                 className="px-4 py-2 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all"
-//                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-//               >
-//                 Login
-//               </motion.button>
-//               <motion.button
-//                 whileHover={{ scale: 1.05, boxShadow: "0 0 24px rgba(147,51,234,0.5)" }}
-//                 whileTap={{ scale: 0.98 }}
-//                 onClick={() => navigate("/register")}
-//                 className="px-5 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transition-all duration-300"
-//                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-//               >
-//                 Register
-//               </motion.button>
-//             </>
-//           )}
-//         </div>
-
-//         <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-slate-400 hover:text-white p-2">
-//           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-//             {menuOpen ? <path d="M18 6L6 18M6 6l12 12"/> : <path d="M3 12h18M3 6h18M3 18h18"/>}
-//           </svg>
-//         </button>
-//       </div>
-
-//       <AnimatePresence>
-//         {menuOpen && (
-//           <motion.div
-//             initial={{ opacity: 0, height: 0 }}
-//             animate={{ opacity: 1, height: "auto" }}
-//             exit={{ opacity: 0, height: 0 }}
-//             className="md:hidden bg-slate-900/95 backdrop-blur-xl border-t border-slate-700/50 px-8 pb-4"
-//           >
-//             {links.map((link) => (
-//               <a key={link} href="#" className="block py-3 text-slate-400 hover:text-white text-sm font-medium border-b border-slate-800/60" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-//                 {link}
-//               </a>
-//             ))}
-//           </motion.div>
-//         )}
-//       </AnimatePresence>
-//     </motion.nav>
-//   );
-// }
-
-// ─── HERO ─────────────────────────────────────────────────────────────────────
 function Hero() {
   const [lineIdx, setLineIdx] = useState(0);
   const [displayed, setDisplayed] = useState("");
@@ -464,12 +282,11 @@ const { user } = useContext(AuthContext);
 
   return (
     <section className="relative min-h-screen flex items-center pt-20 pb-12 overflow-hidden">
-      {/* Ambient glows — design system: purple-600/20 600×600 blur-[120px] pulse, pink-600/15 500×500 blur-[100px] pulse 2s delay */}
       <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-purple-600/20 rounded-full blur-[120px] animate-pulse pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-pink-600/15 rounded-full blur-[100px] animate-pulse pointer-events-none" style={{ animationDelay: "2s" }} />
 
       <div className="max-w-7xl mx-auto px-8 w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-        {/* LEFT */}
+       
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
@@ -487,7 +304,7 @@ const { user } = useContext(AuthContext);
             The Social Platform for Developers
           </motion.div>
 
-          {/* Heading — design system: text-7xl md:text-8xl, font-bold */}
+          
           <h1
             className="text-7xl md:text-8xl font-bold text-white leading-[1.0] tracking-tight mb-6"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
@@ -498,7 +315,6 @@ const { user } = useContext(AuthContext);
             </span>
           </h1>
 
-          {/* Typewriter — design system: text-xl md:text-2xl, text-slate-300 */}
           <div className="h-12 mb-6 flex items-center">
             <span
               className="text-xl md:text-2xl font-semibold text-slate-300"
@@ -509,7 +325,6 @@ const { user } = useContext(AuthContext);
             </span>
           </div>
 
-          {/* Subtext — design system: text-xl, text-slate-300 */}
           <p
             className="text-slate-300 text-xl leading-relaxed mb-10 max-w-lg"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
@@ -517,7 +332,6 @@ const { user } = useContext(AuthContext);
             Where developers share ideas, grow their network, and build a presence — all in one premium community built by devs, for devs.
           </p>
 
-          {/* Buttons — design system: from-purple-600 via-pink-600 to-indigo-600, px-8 py-4, rounded-2xl */}
           <div className="flex flex-wrap gap-4">
             <motion.button
   whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(147,51,234,0.5)" }}
@@ -531,7 +345,6 @@ const { user } = useContext(AuthContext);
             
           </div>
 
-          {/* Social proof */}
           <div className="mt-10 flex items-center gap-4">
     <div className="flex -space-x-2">
   {["axel", "nova", "priya", "marco", "zara"].map((s) => (
@@ -549,7 +362,6 @@ const { user } = useContext(AuthContext);
           </div>
         </motion.div>
 
-        {/* RIGHT — Video, glow container — design system: -inset-6, purple/pink/indigo 50%, blur-[50px], opacity-80 */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -559,7 +371,6 @@ const { user } = useContext(AuthContext);
           <div className="relative">
             <div className="absolute -inset-6 bg-gradient-to-r from-purple-600/50 via-pink-600/50 to-indigo-600/50 rounded-3xl blur-[50px] opacity-80 pointer-events-none" />
 
-            {/* Floating — design system: y [0,-15,0], 5s, infinite, easeInOut */}
             <motion.div
               animate={{ y: [0, -15, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
@@ -578,39 +389,37 @@ const { user } = useContext(AuthContext);
                 />
               </div>
 
-              {/* Floating stat cards */}
-              <motion.div
+              {/* <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.2 }}
                 className="absolute -bottom-5 -left-6 bg-slate-900/80 backdrop-blur-md border border-slate-700/50 rounded-2xl px-4 py-3 shadow-2xl"
               >
-                <div className="flex items-center gap-2.5">
+                {/* <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-sm">🔥</div>
-                  <div>
+                  {/* <div>
                     <p className="text-white font-bold text-sm leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>1,247</p>
                     <p className="text-slate-400 text-xs mt-0.5" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Posts today</p>
                   </div>
-                </div>
-              </motion.div>
+                </div> 
+              </motion.div> */}
 
-              <motion.div
+              {/* <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.4 }}
                 className="absolute -top-5 -right-6 bg-slate-900/80 backdrop-blur-md border border-slate-700/50 rounded-2xl px-4 py-3 shadow-2xl"
               >
-                <div className="flex items-center gap-2">
+                {/* <div className="flex items-center gap-2">
                   <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                   <span className="text-slate-400 text-xs font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>340 online now</span>
-                </div>
-              </motion.div>
+                </div> 
+              </motion.div> */}
             </motion.div>
           </div>
         </motion.div>
       </div>
 
-      {/* Scroll hint */}
       <motion.div
         animate={{ y: [0, 8, 0] }}
         transition={{ duration: 2, repeat: Infinity }}
@@ -624,7 +433,6 @@ const { user } = useContext(AuthContext);
   );
 }
 
-// ─── FEED PREVIEW ─────────────────────────────────────────────────────────────
 function PostCard({ post, delay }) {
   const [liked, setLiked] = useState(post.liked);
   const [likes, setLikes] = useState(post.likes);
@@ -638,7 +446,6 @@ function PostCard({ post, delay }) {
       whileHover={{ y: -4 }}
       className="relative bg-slate-900/60 backdrop-blur-md border border-slate-700/50 hover:border-purple-500/50 rounded-2xl p-6 transition-all duration-300 cursor-pointer group"
     >
-      {/* Hover glow — design system: purple-600/20 to pink-600/20, blur-xl */}
       <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
       <div className="relative flex items-start gap-3 mb-4">
@@ -742,7 +549,6 @@ const { user } = useContext(AuthContext);
   );
 }
 
-// ─── DEVELOPERS SECTION ───────────────────────────────────────────────────────
 function DevCard({ dev, delay, setShowAuthPopup }) {
   const [following, setFollowing] = useState(false);
 const { user } = useContext(AuthContext);
@@ -756,7 +562,7 @@ const navigate = useNavigate();
       whileHover={{ y: -8 }}
       className="relative bg-slate-900/60 backdrop-blur-md border border-slate-700/50 hover:border-purple-500/50 rounded-2xl p-8 text-center group transition-all duration-300"
     >
-      {/* Hover glow */}
+
       <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
       <div className="relative mb-4">
@@ -861,7 +667,6 @@ function DevelopersSection({ setShowAuthPopup }) {
   );
 }
 
-// ─── CHAT PREVIEW ─────────────────────────────────────────────────────────────
 function ChatSection() {
   const [typing, setTyping] = useState(true);
 
@@ -876,7 +681,7 @@ function ChatSection() {
         <div className="w-full h-px bg-gradient-to-r from-transparent via-pink-500/20 to-transparent mb-24" />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Text */}
+ 
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -908,7 +713,6 @@ function ChatSection() {
             </div>
           </motion.div>
 
-          {/* Chat UI mock — glow container design system */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -919,7 +723,7 @@ function ChatSection() {
             <div className="absolute -inset-6 bg-gradient-to-r from-purple-600/50 via-pink-600/50 to-indigo-600/50 rounded-3xl blur-[50px] opacity-80 pointer-events-none" />
 
             <div className="relative bg-slate-900/60 backdrop-blur-md border border-slate-700/50 rounded-2xl overflow-hidden shadow-2xl">
-              {/* Header */}
+
               <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-700/50 bg-slate-900/40">
                 <img src="https://api.dicebear.com/9.x/toon-head/svg?seed=rujjjjjjjjjjjjjjjjjpl&mouth=smile&eyes=happy&backgroundColor=111827" className="w-14  h-15 rounded-xl border border-slate-700/50" alt="" />
                 <div>
@@ -933,7 +737,7 @@ function ChatSection() {
                 </div>
               </div>
 
-              {/* Messages */}
+     
               <div className="p-5 space-y-4 min-h-[220px]">
                 {CHAT_MESSAGES.map((msg, i) => (
                   <motion.div
@@ -956,7 +760,7 @@ function ChatSection() {
                   </motion.div>
                 ))}
 
-                {/* Typing indicator */}
+          
                 <AnimatePresence>
                   {typing && (
                     <motion.div
@@ -977,7 +781,7 @@ function ChatSection() {
                 </AnimatePresence>
               </div>
 
-              {/* Input */}
+         
               <div className="px-5 pb-5">
                 <div className="flex items-center gap-3 bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-3">
                   <span className="text-slate-600 text-sm flex-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Reply to Nova…</span>
@@ -994,7 +798,6 @@ function ChatSection() {
   );
 }
 
-// ─── CTA ──────────────────────────────────────────────────────────────────────
 function CTASection() {
   const navigate = useNavigate();
 const { user } = useContext(AuthContext);
@@ -1010,19 +813,16 @@ const { user } = useContext(AuthContext);
           transition={{ duration: 0.8 }}
           className="relative rounded-3xl overflow-hidden"
         >
-          {/* CTA glow — design system: layer1 -inset-8 blur-[80px], layer2 inset-0 blur-3xl */}
           <div className="absolute -inset-8 bg-gradient-to-r from-purple-600/50 via-pink-600/50 to-indigo-600/50 rounded-3xl blur-[80px]" />
           <div className="absolute inset-0 bg-gradient-to-r from-purple-600/40 via-pink-600/40 to-indigo-600/40 blur-3xl" />
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-slate-900/90" />
           <div className="absolute inset-0 border-2 border-purple-500/30 rounded-3xl" />
 
-          {/* Pulsing orbs */}
           <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 5, repeat: Infinity }}
             className="absolute top-0 left-1/4 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl" />
           <motion.div animate={{ scale: [1.2, 1, 1.2], opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 6, repeat: Infinity }}
             className="absolute bottom-0 right-1/4 w-72 h-72 bg-pink-600/15 rounded-full blur-3xl" />
 
-          {/* Rotating ring — design system: rotate 360, 25s, linear */}
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
@@ -1080,7 +880,6 @@ const { user } = useContext(AuthContext);
   );
 }
 
-// ─── FOOTER ───────────────────────────────────────────────────────────────────
 function Footer() {
   return (
     <footer className="relative z-10 py-12 border-t border-slate-800/60">
@@ -1106,22 +905,22 @@ function Footer() {
   );
 }
 
-// ─── ROOT ─────────────────────────────────────────────────────────────────────
 export default function Home() {
   
+  const navigate = useNavigate();
+
 const { user } = useContext(AuthContext);
 const isLoggedIn = !!user;
 const [showAuthPopup, setShowAuthPopup] = useState(false);
   return (
     <>
-      {/* Design system font: Space Grotesk */}
+  
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
       `}</style>
 
-      {/* Design system background: from-[#0f0c29] via-[#302b63] to-[#24243e], to-br */}
       <div
         className="min-h-screen relative"
         style={{ background: "linear-gradient(to bottom right, #0f0c29, #302b63, #24243e)" }}
@@ -1148,7 +947,6 @@ const [showAuthPopup, setShowAuthPopup] = useState(false);
         transition={{ type: "spring", stiffness: 180, damping: 18 }}
         className="relative w-full max-w-md overflow-hidden rounded-3xl border border-purple-500/30 bg-slate-900/90 p-8 shadow-2xl"
       >
-        {/* Glow */}
         <div className="absolute -top-20 -left-20 w-40 h-40 bg-purple-600/30 rounded-full blur-3xl" />
         <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-pink-600/30 rounded-full blur-3xl" />
 

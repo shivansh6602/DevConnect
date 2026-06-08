@@ -25,9 +25,7 @@ import {
 } from "framer-motion";
 
 import { Link, useNavigate } from "react-router-dom";
-// ─────────────────────────────────────────────────────────────────────────────
-// STARFIELD — identical to every other DevConnect page
-// ─────────────────────────────────────────────────────────────────────────────
+
 function StarField() {
   const canvasRef = useRef(null);
   const animRef   = useRef(null);
@@ -48,7 +46,7 @@ function StarField() {
     resize();
     window.addEventListener("resize", resize);
 
-    // 280 twinkling stars
+
     starsRef.current = Array.from({ length: 280 }, () => {
       const dur = Math.random() * 3 + 1.5;
       return {
@@ -63,7 +61,7 @@ function StarField() {
       };
     });
 
-    // 5 shooting stars — purple-300 tail
+
     const mkShooter = (s) => ({
       x: 0, y: 0,
       angle: (Math.PI / 180) * (30 + Math.random() * 12),
@@ -146,9 +144,7 @@ function StarField() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// FLOATING PARTICLES
-// ─────────────────────────────────────────────────────────────────────────────
+
 function FloatingParticles() {
   const pts = useRef(
     Array.from({ length: 18 }, (_, i) => ({ x: 2 + i * 5.5, delay: i * 0.55, dur: 5 + (i % 5) }))
@@ -166,9 +162,7 @@ function FloatingParticles() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SWEEP LINE
-// ─────────────────────────────────────────────────────────────────────────────
+
 function SweepLine() {
   return (
     <motion.div
@@ -183,9 +177,7 @@ function SweepLine() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SECTION TITLE
-// ─────────────────────────────────────────────────────────────────────────────
+
 function SectionTitle({ icon, title }) {
   return (
     <div className="flex items-center gap-2 mb-3">
@@ -198,9 +190,7 @@ function SectionTitle({ icon, title }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GLASS INPUT
-// ─────────────────────────────────────────────────────────────────────────────
+
 function GlassInput({ icon, focusKey, activeFocus, onFocus, onBlur, children }) {
   const isFocused = activeFocus === focusKey;
   return (
@@ -234,13 +224,9 @@ function GlassInput({ icon, focusKey, activeFocus, onFocus, onBlur, children }) 
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN COMPONENT — ALL original logic untouched
-// ─────────────────────────────────────────────────────────────────────────────
 const Register = () => {
   
 
-  // ── ORIGINAL STATE ─────────────────────────────────────────────────────────
   const [name,       setName]       = useState("");
   const [username,   setUsername]   = useState("");
   const [email,      setEmail]      = useState("");
@@ -253,7 +239,7 @@ const Register = () => {
 
   const navigate = useNavigate();
   const auth = getAuth();
-  // ── ORIGINAL AVATAR LOGIC ──────────────────────────────────────────────────
+  
   const getAvatar = (seed) =>
     `https://api.dicebear.com/9.x/toon-head/svg?seed=${encodeURIComponent(seed)}&backgroundColor=b6e3f4,c0aede,d1d4f9&eyes=wide&eyebrows=neutral,happy&mouth=smile&hair=bun,sideComed,spiky,undercut&rearHair=longStraight,longWavy,shoulderHigh&clothes=shirt,tShirt,openJacket&skinColor=f1c3a5,c68e7a&beardProbability=10`;
   const avatars = [
@@ -264,7 +250,7 @@ const Register = () => {
   ];
   const [selectedAvatar, setSelectedAvatar] = useState(avatars[0]);
 
-  // ── ORIGINAL FIREBASE FUNCTIONS ────────────────────────────────────────────
+ 
   const checkUsername = async () => {
     const clean = username.toLowerCase().trim();
     const q = query(collection(db, "users"), where("username", "==", clean));
@@ -305,7 +291,7 @@ const Register = () => {
       console.log(err.message);
     }
   };
-  // ── END ORIGINAL LOGIC ─────────────────────────────────────────────────────
+
 
   const [activeFocus, setActiveFocus] = useState(null);
   const [registering, setRegistering] = useState(false);
@@ -336,24 +322,22 @@ const Register = () => {
         <StarField />
         <FloatingParticles />
 
-        {/* Ambient glow blobs */}
+     
         <div className="fixed top-1/4 left-1/4 w-[500px] h-[500px] bg-purple-600/15 rounded-full blur-[120px] animate-pulse pointer-events-none z-0" />
         <div className="fixed bottom-1/4 right-1/4 w-[400px] h-[400px] bg-pink-600/10 rounded-full blur-[100px] animate-pulse pointer-events-none z-0" style={{ animationDelay: "2s" }} />
 
-        {/* ════════════════════════════════════════
-            CENTERED GLASS CARD
-        ════════════════════════════════════════ */}
+        
         <motion.div
           initial={{ opacity: 0, y: 32, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
           className="relative z-10 w-full max-w-[460px]"
         >
-          {/* outer glow aura layers */}
+        
           <div className="absolute -inset-6 bg-gradient-to-br from-purple-600/22 via-pink-600/12 to-indigo-600/20 rounded-[3rem] blur-[36px] pointer-events-none" />
           <div className="absolute -inset-2 bg-gradient-to-br from-purple-600/10 via-transparent to-indigo-600/8 rounded-[2rem] blur-[14px] pointer-events-none" />
 
-          {/* glass card */}
+
           <div
             className="relative overflow-hidden"
             style={{
@@ -368,15 +352,14 @@ const Register = () => {
           >
             <SweepLine />
 
-            {/* inner top shimmer */}
             <div className="absolute top-0 left-0 right-0 h-24 pointer-events-none"
               style={{ background: "linear-gradient(to bottom,rgba(147,51,234,0.07) 0%,transparent 100%)" }} />
 
-            {/* scrollable content */}
+      
             <div className="reg-scroll overflow-y-auto" style={{ maxHeight: "min(82vh,860px)" }}>
               <div className="px-8 pt-8 pb-8 space-y-5">
 
-                {/* ── Header ── */}
+           
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -394,14 +377,13 @@ const Register = () => {
                   </p>
                 </motion.div>
 
-                {/* ── AVATAR PREVIEW + PICKER ── */}
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
                   className="flex flex-col items-center gap-4"
                 >
-                  {/* preview */}
+             
                   <div className="relative">
                     <div className="absolute -inset-2 rounded-full bg-gradient-to-br from-purple-600/50 via-pink-500/40 to-indigo-600/50 blur-[14px] opacity-80" />
                     <div className="relative p-[3px] rounded-full bg-gradient-to-br from-purple-500 via-pink-400 to-indigo-500">
@@ -417,9 +399,9 @@ const Register = () => {
                     <span className="absolute bottom-0.5 right-0.5 w-4 h-4 bg-green-400 rounded-full border-2 border-slate-900 shadow-[0_0_8px_rgba(74,222,128,0.75)]" />
                   </div>
 
-                  {/* avatar grid */}
+                
                   <div className="w-full">
-                    <SectionTitle icon="🎨" title="Choose Avatar" />
+                    <SectionTitle  title="Choose Avatar" />
                     <div className="grid grid-cols-6 gap-2">
                       {avatars.map((img, i) => {
                         const isSelected = selectedAvatar === img;
@@ -468,17 +450,17 @@ const Register = () => {
                   </div>
                 </motion.div>
 
-                {/* divider */}
+               
                 <div className="h-px bg-gradient-to-r from-transparent via-slate-700/50 to-transparent" />
 
-                {/* ── IDENTITY ── */}
+               
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.35 }}
                   className="space-y-2.5"
                 >
-                  <SectionTitle icon="👤" title="Identity" />
+                  <SectionTitle title="Identity" />
 
                   <GlassInput icon="✦" focusKey="name" activeFocus={activeFocus} onFocus={setActiveFocus} onBlur={() => setActiveFocus(null)}>
                     <input placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} />
@@ -497,14 +479,14 @@ const Register = () => {
                   </GlassInput>
                 </motion.div>
 
-                {/* ── OCCUPATION ── */}
+            
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
                 >
-                  <SectionTitle icon="💼" title="Occupation" />
-                  {/* original select — untouched */}
+                  <SectionTitle  title="Occupation" />
+            
                   <div
                     className="relative flex items-center gap-3 px-4 py-3 rounded-xl"
                     style={{
@@ -513,7 +495,7 @@ const Register = () => {
                       backdropFilter: "blur(16px)",
                     }}
                   >
-                    <span className="text-slate-600 text-sm flex-shrink-0">🛠️</span>
+                    
                     <select
                       value={occupation}
                       onChange={(e) => setOccupation(e.target.value)}
@@ -533,15 +515,14 @@ const Register = () => {
                   </div>
                 </motion.div>
 
-                {/* ── SKILLS ── */}
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.43 }}
                 >
-                  <SectionTitle icon="🛠️" title="Skills" />
+                  <SectionTitle  title="Skills" />
 
-                  <GlassInput icon="⌨️" focusKey="skill" activeFocus={activeFocus} onFocus={setActiveFocus} onBlur={() => setActiveFocus(null)}>
+                  <GlassInput focusKey="skill" activeFocus={activeFocus} onFocus={setActiveFocus} onBlur={() => setActiveFocus(null)}>
                     <input
                       placeholder="Type a skill and press Enter…"
                       value={skillInput}
@@ -579,7 +560,6 @@ const Register = () => {
                   </AnimatePresence>
                 </motion.div>
 
-                {/* ── LINKS ── */}
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -603,7 +583,7 @@ const Register = () => {
                   </GlassInput>
                 </motion.div>
 
-                {/* ── REGISTER BUTTON ── */}
+              
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -662,7 +642,6 @@ const Register = () => {
               </div>
             </div>
 
-            {/* bottom inner glow */}
             <div className="absolute bottom-0 left-0 right-0 h-14 pointer-events-none"
               style={{ background: "linear-gradient(to top,rgba(147,51,234,0.05) 0%,transparent 100%)" }} />
           </div>

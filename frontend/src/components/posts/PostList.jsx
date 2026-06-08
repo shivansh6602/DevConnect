@@ -8,7 +8,7 @@ const PostList = ({
   deleteComment,
   likeComment
 }) => {
-  // 🔥 safety check (prevents crash)
+
   if (!posts || posts.length === 0) {
     return <p className="text-center text-gray-500 mt-4">No posts yet</p>;
   }
