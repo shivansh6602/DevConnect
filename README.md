@@ -36,16 +36,16 @@ DevConnect
 ## 📌 Overview
 A developer-focused social platform to connect, share posts, and collaborate.
 
-## ⚡ Features
+##  Features
 - Authentication & Protected Routes
 - Developer Feed
 - Post Creation & Interaction
 - Scalable Component Architecture
 
-## 🛠 Tech Stack
+##  Tech Stack
 - React.js
 - Context API
-- CSS / Tailwind (if used)
+- CSS / Tailwind 
 
 ## 📂 Folder Structure
 frontend/
