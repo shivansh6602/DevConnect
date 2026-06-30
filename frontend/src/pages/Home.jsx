@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -74,9 +74,10 @@ const CHAT_MESSAGES = [
   {
     id: 1,
     sender: "Nova Kim",
-avatar: "https://api.dicebear.com/9.x/toon-head/svg?seed=rujjjjjjjjjjjjjjjjjpl&mouth=smile&eyes=happy",    text: "Hey! Saw your post about CRDTs — super interesting 👀",
+    avatar: "https://api.dicebear.com/9.x/toon-head/svg?seed=rujjjjjjjjjjjjjjjjjpl&mouth=smile&eyes=happy",
+    text: "Hey! Saw your post about CRDTs — super interesting 👀",
     time: "10:42",
-    own: false
+    own: false,
   },
   {
     id: 2,
@@ -84,19 +85,18 @@ avatar: "https://api.dicebear.com/9.x/toon-head/svg?seed=rujjjjjjjjjjjjjjjjjpl&m
     avatar: "https://api.dicebear.com/9.x/toon-head/svg?seed=me&eyes=happy&mouth=smile",
     text: "Thanks! I'm planning to open-source it next week.",
     time: "10:43",
-    own: true
+    own: true,
   },
   {
     id: 3,
     sender: "Nova Kim",
-avatar: "https://api.dicebear.com/9.x/toon-head/svg?seed=rujjjjjjjjjjjjjjjjjpl&mouth=smile&eyes=happy",    text: "Would love to contribute. Can we hop on a call?",
+    avatar: "https://api.dicebear.com/9.x/toon-head/svg?seed=rujjjjjjjjjjjjjjjjjpl&mouth=smile&eyes=happy",
+    text: "Would love to contribute. Can we hop on a call?",
     time: "10:44",
-    own: false
-  }
+    own: false,
+  },
 ];
 
-const NAV_LINKS_GUEST = ["Home", "Explore", "Login", "Register"];
-const NAV_LINKS_USER = ["Feed", "Developers", "Chat", "Profile"];
 const ANIMATED_LINES = [
   "Share your thoughts 💬",
   "Connect with developers 🌍",
@@ -104,6 +104,131 @@ const ANIMATED_LINES = [
   "Chat. Post. Grow.",
 ];
 
+function CursorGlow() {
+  const x = useMotionValue(-200);
+  const y = useMotionValue(-200);
+  const springX = useSpring(x, { stiffness: 80, damping: 20 });
+  const springY = useSpring(y, { stiffness: 80, damping: 20 });
+
+  useEffect(() => {
+    const move = (e) => { x.set(e.clientX); y.set(e.clientY); };
+    window.addEventListener("mousemove", move);
+    return () => window.removeEventListener("mousemove", move);
+  }, []);
+
+  return (
+    <motion.div
+      style={{ left: springX, top: springY, translateX: "-50%", translateY: "-50%" }}
+      className="fixed pointer-events-none z-[1] w-[500px] h-[500px] rounded-full"
+      animate={{}}
+    >
+      <div className="w-full h-full rounded-full bg-purple-600/10 blur-[80px]" />
+    </motion.div>
+  );
+}
+
+function FloatingParticles() {
+  const containerRef = useRef(null);
+  const particlesRef = useRef([]);
+  const mouseRef = useRef({ x: 0, y: 0 });
+  const rafRef = useRef(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const COUNT = 60;
+    const colors = [
+      "rgba(167,139,250,",  // purple
+      "rgba(244,114,182,",  // pink
+      "rgba(99,102,241,",   // indigo
+      "rgba(255,255,255,",  // white
+      "rgba(196,181,253,",  // light purple
+    ];
+
+    particlesRef.current = Array.from({ length: COUNT }, () => ({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 2.5 + 0.5,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      alpha: Math.random() * 0.4 + 0.1,
+      baseAlpha: Math.random() * 0.4 + 0.1,
+      pulseSpeed: Math.random() * 0.02 + 0.005,
+      pulseT: Math.random() * Math.PI * 2,
+      // how strongly this particle is attracted to cursor
+      attraction: Math.random() * 0.00015 + 0.00005,
+    }));
+
+    const canvas = document.createElement("canvas");
+    canvas.style.cssText = "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;";
+    el.appendChild(canvas);
+    const ctx = canvas.getContext("2d");
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const onMouse = (e) => { mouseRef.current = { x: e.clientX, y: e.clientY }; };
+    window.addEventListener("mousemove", onMouse);
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const mx = mouseRef.current.x;
+      const my = mouseRef.current.y;
+
+      particlesRef.current.forEach((p) => {
+        // gentle attraction toward cursor (within 250px radius)
+        const dx = mx - p.x;
+        const dy = my - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 300) {
+          p.vx += dx * p.attraction;
+          p.vy += dy * p.attraction;
+        }
+
+        // damping
+        p.vx *= 0.98;
+        p.vy *= 0.98;
+        p.x += p.vx;
+        p.y += p.vy;
+
+        // wrap
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+
+        // pulse alpha
+        p.pulseT += p.pulseSpeed;
+        p.alpha = p.baseAlpha + Math.sin(p.pulseT) * 0.15;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.color + p.alpha + ")";
+        ctx.shadowBlur = dist < 150 ? 8 : 3;
+        ctx.shadowColor = p.color + "0.6)";
+        ctx.fill();
+      });
+
+      rafRef.current = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("mousemove", onMouse);
+      if (el.contains(canvas)) el.removeChild(canvas);
+    };
+  }, []);
+
+  return <div ref={containerRef} className="fixed inset-0 z-[2] pointer-events-none" />;
+}
 
 function StarField() {
   const canvasRef = useRef(null);
@@ -111,7 +236,7 @@ function StarField() {
   const starsRef = useRef([]);
   const shootersRef = useRef([]);
   const { scrollYProgress } = useScroll();
-  const yParallax = useTransform(scrollYProgress, [0, 1], [0, -100]);
+  const yParallax = useTransform(scrollYProgress, [0, 1], [0, -80]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -120,50 +245,57 @@ function StarField() {
 
     const resize = () => {
       canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight * 2;
+      canvas.height = window.innerHeight * 2.5;
     };
     resize();
     window.addEventListener("resize", resize);
 
-   
-    starsRef.current = Array.from({ length: 300 }, () => {
-      const dur = Math.random() * 3 + 1.5;         
-      const delay = Math.random() * 3;               
+    starsRef.current = Array.from({ length: 650 }, () => {
+      const dur = Math.random() * 3 + 1.5;
+      const delay = Math.random() * 3;
+      const size = Math.random();
+      const r = size < 0.7
+        ? Math.random() * 0.6 + 0.2
+        : size < 0.9
+        ? Math.random() * 0.8 + 0.6
+        : Math.random() * 1.2 + 1.0;
       return {
         x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight * 2,
-        r: (Math.random() * 2.5 + 0.5) / 2,      
-        alpha: Math.random(),
+        y: Math.random() * window.innerHeight * 2.5,
+        r,
+        alpha: Math.random() * 0.5 + 0.5,
         dAlpha: 0.006 / dur * (Math.random() > 0.5 ? 1 : -1),
         scaleT: Math.random() * Math.PI * 2,
         scaleDelta: (2 * Math.PI) / (dur * 60),
         delayFrames: Math.floor(delay * 60),
+        // color tint: most white, some blue-white, few warm
+        hue: Math.random() < 0.15 ? `rgba(180,200,255,` : Math.random() < 0.05 ? `rgba(255,220,180,` : `rgba(255,255,255,`,
       };
     });
 
     const mkShooter = (stagger = 0) => {
-      const angle = Math.PI / 180 * (30 + Math.random() * 10); 
-      const waitFrames = Math.floor((4 + Math.random() * 2) * 60); 
+      const angle = Math.PI / 180 * (28 + Math.random() * 14);
+      const waitFrames = Math.floor((4 + Math.random() * 3) * 60);
       return {
-        x: 0, y: 0,
-        angle,
-        speed: 8 + Math.random() * 5,
-        len: 80,
+        x: 0, y: 0, angle,
+        speed: 9 + Math.random() * 6,
+        len: 90 + Math.random() * 40,
         alpha: 0,
         phase: "wait",
         waitFrames,
         waitCounter: Math.floor(stagger),
       };
     };
-    shootersRef.current = Array.from({ length: 5 }, (_, i) => mkShooter(i * 72));
+    shootersRef.current = Array.from({ length: 6 }, (_, i) => mkShooter(i * 60));
 
     const respawn = (sh) => {
-      sh.x = Math.random() * canvas.width * 0.65;
-      sh.y = Math.random() * (canvas.height * 0.4);
+      sh.x = Math.random() * canvas.width * 0.7;
+      sh.y = Math.random() * (canvas.height * 0.35);
       sh.alpha = 0;
       sh.phase = "shoot";
-      sh.angle = Math.PI / 180 * (30 + Math.random() * 10);
-      sh.speed = 8 + Math.random() * 5;
+      sh.angle = Math.PI / 180 * (28 + Math.random() * 14);
+      sh.speed = 9 + Math.random() * 6;
+      sh.len = 90 + Math.random() * 40;
     };
 
     const draw = () => {
@@ -171,17 +303,20 @@ function StarField() {
 
       starsRef.current.forEach((s) => {
         if (s.delayFrames > 0) { s.delayFrames--; return; }
-      
         s.alpha += s.dAlpha;
-        if (s.alpha >= 1)   { s.alpha = 1;   s.dAlpha *= -1; }
-        if (s.alpha <= 0.1) { s.alpha = 0.1; s.dAlpha *= -1; }
-      
+        if (s.alpha >= 1)    { s.alpha = 1;    s.dAlpha *= -1; }
+        if (s.alpha <= 0.08) { s.alpha = 0.08; s.dAlpha *= -1; }
+
         s.scaleT += s.scaleDelta;
-        const scale = 1 + 0.3 * Math.abs(Math.sin(s.scaleT));
+        const scale = 1 + 0.25 * Math.abs(Math.sin(s.scaleT));
+
         ctx.save();
         ctx.globalAlpha = s.alpha;
         ctx.fillStyle = "#ffffff";
-        if (s.r > 0.7) { ctx.shadowBlur = 3; ctx.shadowColor = "rgba(255,255,255,0.5)"; }
+        if (s.r > 0.5) {
+          ctx.shadowBlur = s.r > 1.0 ? 6 : 3;
+          ctx.shadowColor = s.hue + "0.8)";
+        }
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r * scale, 0, Math.PI * 2);
         ctx.fill();
@@ -191,22 +326,18 @@ function StarField() {
       shootersRef.current.forEach((sh) => {
         if (sh.phase === "wait") {
           sh.waitCounter++;
-          if (sh.waitCounter >= sh.waitFrames) {
-            sh.waitCounter = 0;
-            respawn(sh);
-          }
+          if (sh.waitCounter >= sh.waitFrames) { sh.waitCounter = 0; respawn(sh); }
           return;
         }
-
         sh.x += Math.cos(sh.angle) * sh.speed;
         sh.y += Math.sin(sh.angle) * sh.speed;
-        sh.alpha = Math.min(1, sh.alpha + 0.12);
+        sh.alpha = Math.min(1, sh.alpha + 0.1);
 
-        if (sh.x > canvas.width || sh.y > canvas.height * 0.6) {
-          sh.alpha -= 0.07;
+        if (sh.x > canvas.width || sh.y > canvas.height * 0.55) {
+          sh.alpha -= 0.06;
           if (sh.alpha <= 0) {
             sh.phase = "wait";
-            sh.waitFrames = Math.floor((4 + Math.random() * 2) * 60);
+            sh.waitFrames = Math.floor((4 + Math.random() * 3) * 60);
             sh.waitCounter = 0;
             return;
           }
@@ -214,19 +345,17 @@ function StarField() {
 
         const tailX = sh.x - Math.cos(sh.angle) * sh.len;
         const tailY = sh.y - Math.sin(sh.angle) * sh.len;
-
-
         const grad = ctx.createLinearGradient(tailX, tailY, sh.x, sh.y);
-        grad.addColorStop(0, "rgba(255,255,255,0)");
-        grad.addColorStop(0.45, `rgba(216,180,254,${sh.alpha * 0.6})`); 
+        grad.addColorStop(0,    "rgba(255,255,255,0)");
+        grad.addColorStop(0.4,  `rgba(216,180,254,${sh.alpha * 0.5})`);
         grad.addColorStop(0.75, `rgba(216,180,254,${sh.alpha})`);
-        grad.addColorStop(1,    `rgba(216,180,254,${sh.alpha * 0.2})`);
+        grad.addColorStop(1,    `rgba(255,255,255,${sh.alpha * 0.3})`);
 
         ctx.save();
         ctx.strokeStyle = grad;
-        ctx.lineWidth = 1.5;                     
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = "rgba(192,132,252,0.5)";   
+        ctx.lineWidth = 1.5;
+        ctx.shadowBlur = 14;
+        ctx.shadowColor = "rgba(192,132,252,0.6)";
         ctx.beginPath();
         ctx.moveTo(tailX, tailY);
         ctx.lineTo(sh.x, sh.y);
@@ -251,13 +380,37 @@ function StarField() {
   );
 }
 
+function ParallaxFloat({ children, depth = 1, className = "" }) {
+  const ref = useRef(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const springX = useSpring(x, { stiffness: 60, damping: 18 });
+  const springY = useSpring(y, { stiffness: 60, damping: 18 });
+
+  useEffect(() => {
+    const move = (e) => {
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      x.set(((e.clientX - cx) / cx) * depth * 18);
+      y.set(((e.clientY - cy) / cy) * depth * 12);
+    };
+    window.addEventListener("mousemove", move);
+    return () => window.removeEventListener("mousemove", move);
+  }, [depth]);
+
+  return (
+    <motion.div ref={ref} style={{ x: springX, y: springY }} className={className}>
+      {children}
+    </motion.div>
+  );
+}
 
 function Hero() {
   const [lineIdx, setLineIdx] = useState(0);
   const [displayed, setDisplayed] = useState("");
   const [typing, setTyping] = useState(true);
-const navigate = useNavigate();
-const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     const line = ANIMATED_LINES[lineIdx];
@@ -282,38 +435,48 @@ const { user } = useContext(AuthContext);
 
   return (
     <section className="relative min-h-screen flex items-center pt-20 pb-12 overflow-hidden">
-      <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-purple-600/20 rounded-full blur-[120px] animate-pulse pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-pink-600/15 rounded-full blur-[100px] animate-pulse pointer-events-none" style={{ animationDelay: "2s" }} />
+      {/* Subtle nebula glows — dimmer on black bg */}
+      <ParallaxFloat depth={0.4} className="absolute top-1/4 left-1/4 pointer-events-none">
+        <div className="w-[700px] h-[700px] bg-purple-700/12 rounded-full blur-[130px] animate-pulse" />
+      </ParallaxFloat>
+      <ParallaxFloat depth={0.6} className="absolute bottom-1/4 right-1/4 pointer-events-none">
+        <div className="w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[110px] animate-pulse" style={{ animationDelay: "2s" }} />
+      </ParallaxFloat>
+      <ParallaxFloat depth={0.3} className="absolute top-1/2 right-1/3 pointer-events-none">
+        <div className="w-[300px] h-[300px] bg-pink-700/8 rounded-full blur-[90px] animate-pulse" style={{ animationDelay: "4s" }} />
+      </ParallaxFloat>
 
       <div className="max-w-7xl mx-auto px-8 w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-       
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="relative z-10"
         >
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-purple-500/30 bg-purple-600/10 text-purple-300 text-xs font-semibold mb-6 tracking-wide"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-          >
-            <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse" />
-            The Social Platform for Developers
-          </motion.div>
+          <ParallaxFloat depth={0.5}>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-purple-500/30 bg-purple-600/10 text-purple-300 text-xs font-semibold mb-6 tracking-wide"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse" />
+              The Social Platform for Developers
+            </motion.div>
+          </ParallaxFloat>
 
-          
-          <h1
-            className="text-7xl md:text-8xl font-bold text-white leading-[1.0] tracking-tight mb-6"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-          >
-            Dev
-            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">
-              Connect
-            </span>
-          </h1>
+          <ParallaxFloat depth={0.8}>
+            <h1
+              className="text-7xl md:text-8xl font-bold text-white leading-[1.0] tracking-tight mb-6"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              Dev
+              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">
+                Connect
+              </span>
+            </h1>
+          </ParallaxFloat>
 
           <div className="h-12 mb-6 flex items-center">
             <span
@@ -325,58 +488,54 @@ const { user } = useContext(AuthContext);
             </span>
           </div>
 
-          <p
-            className="text-slate-300 text-xl leading-relaxed mb-10 max-w-lg"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-          >
-            Where developers share ideas, grow their network, and build a presence — all in one premium community built by devs, for devs.
-          </p>
+          <ParallaxFloat depth={0.3}>
+            <p
+              className="text-slate-400 text-xl leading-relaxed mb-10 max-w-lg"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              Where developers share ideas, grow their network, and build a presence — all in one premium community built by devs, for devs.
+            </p>
+          </ParallaxFloat>
 
           <div className="flex flex-wrap gap-4">
             <motion.button
-  whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(147,51,234,0.5)" }}
-  whileTap={{ scale: 0.98 }}
-  onClick={() => navigate(user ? "/feed" : "/register")}
-  className="px-8 py-4 rounded-2xl font-semibold text-white text-lg bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transition-all duration-300"
-  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
->
-  {user ? "Go to Feed" : "Get Started"}
-</motion.button>
-            
+              whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(147,51,234,0.5)" }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => navigate(user ? "/feed" : "/register")}
+              className="px-8 py-4 rounded-2xl font-semibold text-white text-lg bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transition-all duration-300"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              {user ? "Go to Feed" : "Get Started"}
+            </motion.button>
           </div>
 
           <div className="mt-10 flex items-center gap-4">
-    <div className="flex -space-x-2">
-  {["axel", "nova", "priya", "marco", "zara"].map((s) => (
-    <img
-      key={s}
-      src={`https://api.dicebear.com/9.x/toon-head/svg?seed=${s}&eyes=happy&mouth=smile`}
-      className="w-8 h-8 rounded-full border-2 border-[#0f0c29]"
-      alt="avatar"
-    />
-  ))}
-</div>
+            <div className="flex -space-x-2">
+              {["axel", "nova", "priya", "marco", "zara"].map((s) => (
+                <img
+                  key={s}
+                  src={`https://api.dicebear.com/9.x/toon-head/svg?seed=${s}&eyes=happy&mouth=smile`}
+                  className="w-8 h-8 rounded-full border-2 border-black"
+                  alt="avatar"
+                />
+              ))}
+            </div>
             <span className="text-slate-400 text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               <span className="text-slate-200 font-semibold">12,400+</span> developers already connected
             </span>
           </div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
-          className="relative z-10 flex justify-center"
-        >
+        {/* Hero right: floating video card */}
+        <ParallaxFloat depth={1.2} className="relative z-10 flex justify-center">
           <div className="relative">
-            <div className="absolute -inset-6 bg-gradient-to-r from-purple-600/50 via-pink-600/50 to-indigo-600/50 rounded-3xl blur-[50px] opacity-80 pointer-events-none" />
-
+            <div className="absolute -inset-6 bg-gradient-to-r from-purple-600/40 via-pink-600/40 to-indigo-600/40 rounded-3xl blur-[60px] opacity-70 pointer-events-none" />
             <motion.div
-              animate={{ y: [0, -15, 0] }}
+              animate={{ y: [0, -14, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
               className="relative w-full max-w-[560px]"
             >
-              <div className="relative rounded-3xl overflow-hidden border border-slate-700/50 shadow-2xl">
+              <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
                 <div className="absolute inset-0 bg-gradient-to-tr from-purple-600/10 via-transparent to-indigo-600/10 z-10 pointer-events-none rounded-3xl" />
                 <video
                   src="/Animated_video.mp4"
@@ -388,36 +547,9 @@ const { user } = useContext(AuthContext);
                   style={{ aspectRatio: "16/10", maxHeight: "480px" }}
                 />
               </div>
-
-              {/* <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.2 }}
-                className="absolute -bottom-5 -left-6 bg-slate-900/80 backdrop-blur-md border border-slate-700/50 rounded-2xl px-4 py-3 shadow-2xl"
-              >
-                {/* <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-sm">🔥</div>
-                  {/* <div>
-                    <p className="text-white font-bold text-sm leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>1,247</p>
-                    <p className="text-slate-400 text-xs mt-0.5" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Posts today</p>
-                  </div>
-                </div> 
-              </motion.div> */}
-
-              {/* <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.4 }}
-                className="absolute -top-5 -right-6 bg-slate-900/80 backdrop-blur-md border border-slate-700/50 rounded-2xl px-4 py-3 shadow-2xl"
-              >
-                {/* <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                  <span className="text-slate-400 text-xs font-medium" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>340 online now</span>
-                </div> 
-              </motion.div> */}
             </motion.div>
           </div>
-        </motion.div>
+        </ParallaxFloat>
       </div>
 
       <motion.div
@@ -426,7 +558,7 @@ const { user } = useContext(AuthContext);
         className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-slate-600"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M12 5v14M5 12l7 7 7-7"/>
+          <path d="M12 5v14M5 12l7 7 7-7" />
         </svg>
       </motion.div>
     </section>
@@ -443,13 +575,13 @@ function PostCard({ post, delay }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay }}
-      whileHover={{ y: -4 }}
-      className="relative bg-slate-900/60 backdrop-blur-md border border-slate-700/50 hover:border-purple-500/50 rounded-2xl p-6 transition-all duration-300 cursor-pointer group"
+      whileHover={{ y: -6, scale: 1.01 }}
+      className="relative bg-white/[0.04] backdrop-blur-md border border-white/10 hover:border-purple-500/40 rounded-2xl p-6 transition-all duration-300 cursor-pointer group"
     >
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-600/15 to-pink-600/15 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
       <div className="relative flex items-start gap-3 mb-4">
-        <img src={post.avatar} className="w-10 h-10 rounded-xl border border-slate-700/50 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" alt={post.name} />
+        <img src={post.avatar} className="w-10 h-10 rounded-xl border border-white/10 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" alt={post.name} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
             <div>
@@ -467,29 +599,27 @@ function PostCard({ post, delay }) {
         {post.content}
       </p>
 
-      <div className="relative flex items-center gap-5 pt-3 border-t border-slate-700/50">
+      <div className="relative flex items-center gap-5 pt-3 border-t border-white/8">
         <motion.button
           whileTap={{ scale: 0.85 }}
-          onClick={() => { setLiked(!liked); setLikes(l => liked ? l - 1 : l + 1); }}
+          onClick={() => { setLiked(!liked); setLikes((l) => (liked ? l - 1 : l + 1)); }}
           className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${liked ? "text-pink-400" : "text-slate-500 hover:text-pink-400"}`}
           style={{ fontFamily: "'Space Grotesk', sans-serif" }}
         >
           <motion.svg animate={{ scale: liked ? [1, 1.35, 1] : 1 }} transition={{ duration: 0.25 }} width="15" height="15" viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
           </motion.svg>
           {likes}
         </motion.button>
-
         <button className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-indigo-400 transition-colors" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
           {post.comments}
         </button>
-
         <button className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-purple-300 transition-colors ml-auto" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/>
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13" />
           </svg>
           Share
         </button>
@@ -500,7 +630,7 @@ function PostCard({ post, delay }) {
 
 function FeedSection() {
   const navigate = useNavigate();
-const { user } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   return (
     <section className="relative py-24 z-10">
       <div className="max-w-7xl mx-auto px-8">
@@ -534,15 +664,15 @@ const { user } = useContext(AuthContext);
           viewport={{ once: true }}
           className="text-center mt-10"
         >
-         <motion.button
-  whileHover={{ scale: 1.05 }}
-  whileTap={{ scale: 0.98 }}
-  onClick={() => navigate(user ? "/feed" : "/register")}
-  className="px-8 py-4 rounded-2xl text-sm font-semibold text-slate-400 bg-slate-900/60 backdrop-blur-md border border-slate-700/50 hover:border-purple-500/50 hover:text-white transition-all duration-300"
-  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
->
-  {user ? "View Full Feed →" : "Register to Explore Feed →"}
-</motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate(user ? "/feed" : "/register")}
+            className="px-8 py-4 rounded-2xl text-sm font-semibold text-slate-400 bg-white/[0.04] backdrop-blur-md border border-white/10 hover:border-purple-500/40 hover:text-white transition-all duration-300"
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            {user ? "View Full Feed →" : "Register to Explore Feed →"}
+          </motion.button>
         </motion.div>
       </div>
     </section>
@@ -551,23 +681,23 @@ const { user } = useContext(AuthContext);
 
 function DevCard({ dev, delay, setShowAuthPopup }) {
   const [following, setFollowing] = useState(false);
-const { user } = useContext(AuthContext);
-const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay }}
-      whileHover={{ y: -8 }}
-      className="relative bg-slate-900/60 backdrop-blur-md border border-slate-700/50 hover:border-purple-500/50 rounded-2xl p-8 text-center group transition-all duration-300"
+      whileHover={{ y: -10, scale: 1.02 }}
+      className="relative bg-white/[0.04] backdrop-blur-md border border-white/10 hover:border-purple-500/40 rounded-2xl p-8 text-center group transition-all duration-300"
     >
-
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-600/15 to-pink-600/15 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
       <div className="relative mb-4">
-        <img src={dev.avatar} className="w-16 h-16 rounded-2xl mx-auto border border-slate-700/50 shadow-2xl group-hover:scale-110 transition-transform duration-300" alt={dev.name} />
-        <span className="absolute -bottom-1 right-[calc(50%-2.25rem)] w-4 h-4 bg-green-400 rounded-full border-2 border-[#0f0c29]" />
+        <img src={dev.avatar} className="w-16 h-16 rounded-2xl mx-auto border border-white/10 shadow-2xl group-hover:scale-110 transition-transform duration-300" alt={dev.name} />
+        <span className="absolute -bottom-1 right-[calc(50%-2.25rem)] w-4 h-4 bg-green-400 rounded-full border-2 border-black" />
       </div>
 
       <h3 className="relative text-white font-bold text-base mb-0.5" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{dev.name}</h3>
@@ -583,7 +713,7 @@ const navigate = useNavigate();
 
       <div className="relative flex items-center justify-center gap-2 mb-5">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-600">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
         </svg>
         <span className="text-slate-500 text-xs" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{dev.followers} followers</span>
       </div>
@@ -591,38 +721,30 @@ const navigate = useNavigate();
       <div className="relative flex gap-2">
         <motion.button
           whileTap={{ scale: 0.95 }}
-         onClick={() => {
-  if (!user) {
-    setShowAuthPopup(true);
-    return;
-  }
-
-  setFollowing(!following);
-}}
+          onClick={() => {
+            if (!user) { setShowAuthPopup(true); return; }
+            setFollowing(!following);
+          }}
           className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all duration-300 ${
             following
-              ? "bg-slate-800/60 text-slate-400 border border-slate-700/50 hover:border-pink-500/30 hover:text-pink-400"
+              ? "bg-white/5 text-slate-400 border border-white/10 hover:border-pink-500/30 hover:text-pink-400"
               : "bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40"
           }`}
           style={{ fontFamily: "'Space Grotesk', sans-serif" }}
         >
           {following ? "Unfollow" : "Follow"}
         </motion.button>
-   <motion.button
-  whileTap={{ scale: 0.95 }}
-  onClick={() => {
-    if (!user) {
-      setShowAuthPopup(true);
-      return;
-    }
-
-    navigate("/profile");
-  }}
-  className="flex-1 py-2 rounded-xl text-xs font-semibold text-slate-400 bg-slate-800/60 border border-slate-700/50 hover:text-white hover:border-purple-500/30 transition-all duration-300"
-  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
->
-  View Profile
-</motion.button>
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={() => {
+            if (!user) { setShowAuthPopup(true); return; }
+            navigate("/profile");
+          }}
+          className="flex-1 py-2 rounded-xl text-xs font-semibold text-slate-400 bg-white/5 border border-white/10 hover:text-white hover:border-purple-500/30 transition-all duration-300"
+          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+        >
+          View Profile
+        </motion.button>
       </div>
     </motion.div>
   );
@@ -632,8 +754,7 @@ function DevelopersSection({ setShowAuthPopup }) {
   return (
     <section className="relative py-24 z-10">
       <div className="max-w-7xl mx-auto px-8">
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent mb-24" />
-
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent mb-24" />
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -651,15 +772,9 @@ function DevelopersSection({ setShowAuthPopup }) {
             Browse and follow developers who are building exciting things in your stack.
           </p>
         </motion.div>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {SAMPLE_DEVS.map((dev, i) => (
-            <DevCard
-  key={dev.id}
-  dev={dev}
-  delay={i * 0.15}
-  setShowAuthPopup={setShowAuthPopup}
-/>
+            <DevCard key={dev.id} dev={dev} delay={i * 0.15} setShowAuthPopup={setShowAuthPopup} />
           ))}
         </div>
       </div>
@@ -671,7 +786,7 @@ function ChatSection() {
   const [typing, setTyping] = useState(true);
 
   useEffect(() => {
-    const t = setInterval(() => setTyping(p => !p), 2200);
+    const t = setInterval(() => setTyping((p) => !p), 2200);
     return () => clearInterval(t);
   }, []);
 
@@ -679,9 +794,7 @@ function ChatSection() {
     <section className="relative py-24 z-10">
       <div className="max-w-7xl mx-auto px-8">
         <div className="w-full h-px bg-gradient-to-r from-transparent via-pink-500/20 to-transparent mb-24" />
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
- 
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -698,7 +811,6 @@ function ChatSection() {
             <p className="text-slate-400 text-lg leading-relaxed mb-8" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               Reach out to any developer in the community. Collaborate, ask questions, build together — in real time.
             </p>
-
             <div className="space-y-3">
               {[
                 { icon: "⚡", text: "Real-time messaging powered by Firestore" },
@@ -720,24 +832,16 @@ function ChatSection() {
             transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
             className="relative"
           >
-            <div className="absolute -inset-6 bg-gradient-to-r from-purple-600/50 via-pink-600/50 to-indigo-600/50 rounded-3xl blur-[50px] opacity-80 pointer-events-none" />
-
-            <div className="relative bg-slate-900/60 backdrop-blur-md border border-slate-700/50 rounded-2xl overflow-hidden shadow-2xl">
-
-              <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-700/50 bg-slate-900/40">
-                <img src="https://api.dicebear.com/9.x/toon-head/svg?seed=rujjjjjjjjjjjjjjjjjpl&mouth=smile&eyes=happy&backgroundColor=111827" className="w-14  h-15 rounded-xl border border-slate-700/50" alt="" />
+            <div className="absolute -inset-6 bg-gradient-to-r from-purple-600/40 via-pink-600/40 to-indigo-600/40 rounded-3xl blur-[60px] opacity-70 pointer-events-none" />
+            <div className="relative bg-white/[0.04] backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+              <div className="flex items-center gap-3 px-5 py-4 border-b border-white/8 bg-black/20">
+                <img src="https://api.dicebear.com/9.x/toon-head/svg?seed=rujjjjjjjjjjjjjjjjjpl&mouth=smile&eyes=happy&backgroundColor=111827" className="w-14 h-14 rounded-xl border border-white/10" alt="" />
                 <div>
                   <p className="text-white font-semibold text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Nova Kim</p>
                   <p className="text-green-400 text-xs" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>● Online</p>
                 </div>
-                <div className="ml-auto flex gap-2">
-                  <button className="w-7 h-7 rounded-lg bg-slate-800/60 flex items-center justify-center text-slate-500 hover:text-white transition-colors">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                  </button>
-                </div>
               </div>
 
-     
               <div className="p-5 space-y-4 min-h-[220px]">
                 {CHAT_MESSAGES.map((msg, i) => (
                   <motion.div
@@ -748,19 +852,21 @@ function ChatSection() {
                     transition={{ delay: i * 0.15 }}
                     className={`flex items-end gap-2 ${msg.own ? "flex-row-reverse" : ""}`}
                   >
-                    {!msg.own && <img src={msg.avatar} className="w-12 h-12 rounded-lg border border-slate-700/50 flex-shrink-0" alt="" />}
-                    <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-snug ${
-                      msg.own
-                        ? "bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white rounded-br-sm shadow-lg shadow-purple-500/25"
-                        : "bg-slate-800/60 text-slate-300 rounded-bl-sm border border-slate-700/50"
-                    }`} style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {!msg.own && <img src={msg.avatar} className="w-12 h-12 rounded-lg border border-white/10 flex-shrink-0" alt="" />}
+                    <div
+                      className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-snug ${
+                        msg.own
+                          ? "bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white rounded-br-sm shadow-lg shadow-purple-500/25"
+                          : "bg-white/6 text-slate-300 rounded-bl-sm border border-white/10"
+                      }`}
+                      style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                    >
                       {msg.text}
                       <span className={`block text-[10px] mt-1 ${msg.own ? "text-white/50 text-right" : "text-slate-600"}`}>{msg.time}</span>
                     </div>
                   </motion.div>
                 ))}
 
-          
                 <AnimatePresence>
                   {typing && (
                     <motion.div
@@ -769,8 +875,8 @@ function ChatSection() {
                       exit={{ opacity: 0 }}
                       className="flex items-end gap-2"
                     >
-                      <img src="https://api.dicebear.com/9.x/toon-head/svg?seed=rujjjjjjjjjjjjjjjjjpl&mouth=smile&eyes=happy" className="w-7 h-7 rounded-lg border border-slate-700/50" alt="" />
-                      <div className="bg-slate-800/60 border border-slate-700/50 px-4 py-3 rounded-2xl rounded-bl-sm flex gap-1.5 items-center">
+                      <img src="https://api.dicebear.com/9.x/toon-head/svg?seed=rujjjjjjjjjjjjjjjjjpl&mouth=smile&eyes=happy" className="w-7 h-7 rounded-lg border border-white/10" alt="" />
+                      <div className="bg-white/6 border border-white/10 px-4 py-3 rounded-2xl rounded-bl-sm flex gap-1.5 items-center">
                         {[0, 0.2, 0.4].map((d) => (
                           <motion.span key={d} animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.7, delay: d }}
                             className="w-1.5 h-1.5 bg-slate-500 rounded-full block" />
@@ -781,12 +887,11 @@ function ChatSection() {
                 </AnimatePresence>
               </div>
 
-         
               <div className="px-5 pb-5">
-                <div className="flex items-center gap-3 bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-3">
+                <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
                   <span className="text-slate-600 text-sm flex-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Reply to Nova…</span>
                   <button className="w-7 h-7 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z"/></svg>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z" /></svg>
                   </button>
                 </div>
               </div>
@@ -800,12 +905,11 @@ function ChatSection() {
 
 function CTASection() {
   const navigate = useNavigate();
-const { user } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   return (
     <section className="relative py-28 z-10 overflow-hidden">
       <div className="max-w-7xl mx-auto px-8">
         <div className="w-full h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent mb-24" />
-
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -813,60 +917,43 @@ const { user } = useContext(AuthContext);
           transition={{ duration: 0.8 }}
           className="relative rounded-3xl overflow-hidden"
         >
-          <div className="absolute -inset-8 bg-gradient-to-r from-purple-600/50 via-pink-600/50 to-indigo-600/50 rounded-3xl blur-[80px]" />
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/40 via-pink-600/40 to-indigo-600/40 blur-3xl" />
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-slate-900/90" />
-          <div className="absolute inset-0 border-2 border-purple-500/30 rounded-3xl" />
+          <div className="absolute -inset-8 bg-gradient-to-r from-purple-600/40 via-pink-600/40 to-indigo-600/40 rounded-3xl blur-[80px]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/70" />
+          <div className="absolute inset-0 border border-purple-500/25 rounded-3xl" />
 
-          <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 5, repeat: Infinity }}
-            className="absolute top-0 left-1/4 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl" />
-          <motion.div animate={{ scale: [1.2, 1, 1.2], opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 6, repeat: Infinity }}
-            className="absolute bottom-0 right-1/4 w-72 h-72 bg-pink-600/15 rounded-full blur-3xl" />
-
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-            className="absolute -right-16 -top-16 w-48 h-48 border border-purple-500/10 rounded-full"
-          />
+          <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 5, repeat: Infinity }}
+            className="absolute top-0 left-1/4 w-64 h-64 bg-purple-600/15 rounded-full blur-3xl" />
+          <motion.div animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.5, 0.2] }} transition={{ duration: 6, repeat: Infinity }}
+            className="absolute bottom-0 right-1/4 w-72 h-72 bg-pink-600/12 rounded-full blur-3xl" />
+          <motion.div animate={{ rotate: 360 }} transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+            className="absolute -right-16 -top-16 w-48 h-48 border border-purple-500/8 rounded-full" />
 
           <div className="relative z-10 text-center py-20 px-8">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-            >
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }}>
               <span className="inline-block text-xs font-semibold text-purple-300 tracking-widest uppercase mb-5 px-3 py-1 rounded-full border border-purple-500/30 bg-purple-600/10" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 Ready to join?
               </span>
               <h2 className="text-5xl md:text-6xl font-bold text-white mb-5 leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 Join the Developer<br />
-                <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">
-                  Community
-                </span>
+                <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">Community</span>
               </h2>
               <p className="text-slate-300 text-xl max-w-lg mx-auto mb-10" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 Post. Connect. Chat. Grow your network with 12,000+ developers who are building the future.
               </p>
-
-              <div className="flex flex-wrap justify-center gap-4">
-                <motion.button
-  whileHover={{ scale: 1.05, boxShadow: "0 0 50px rgba(147,51,234,0.6)" }}
-  whileTap={{ scale: 0.98 }}
-  onClick={() => navigate(user ? "/feed" : "/register")}
-  className="px-10 py-5 rounded-2xl font-semibold text-white text-lg bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transition-all duration-300"
-  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
->
-  {user ? "Go to Feed" : "Get Started — It's Free"}
-</motion.button>
-              
-              </div>
-
+              <motion.button
+                whileHover={{ scale: 1.05, boxShadow: "0 0 50px rgba(147,51,234,0.6)" }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate(user ? "/feed" : "/register")}
+                className="px-10 py-5 rounded-2xl font-semibold text-white text-lg bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 shadow-xl shadow-purple-500/25 hover:shadow-2xl hover:shadow-purple-500/40 transition-all duration-300"
+                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              >
+                {user ? "Go to Feed" : "Get Started — It's Free"}
+              </motion.button>
               <div className="mt-10 flex items-center justify-center gap-8 text-slate-500 text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 {["No credit card", "Open source", "Free forever"].map((t) => (
                   <span key={t} className="flex items-center gap-1.5">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-purple-400">
-                      <path d="M20 6L9 17l-5-5"/>
+                      <path d="M20 6L9 17l-5-5" />
                     </svg>
                     {t}
                   </span>
@@ -880,20 +967,19 @@ const { user } = useContext(AuthContext);
   );
 }
 
+
 function Footer() {
   return (
-    <footer className="relative z-10 py-12 border-t border-slate-800/60">
+    <footer className="relative z-10 py-12 border-t border-white/6">
       <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-md bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-            <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 1L14 4.5V11.5L8 15L2 11.5V4.5L8 1Z" stroke="white" strokeWidth="1.5" fill="none"/><circle cx="8" cy="8" r="2" fill="white"/></svg>
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 1L14 4.5V11.5L8 15L2 11.5V4.5L8 1Z" stroke="white" strokeWidth="1.5" fill="none" /><circle cx="8" cy="8" r="2" fill="white" /></svg>
           </div>
           <span className="text-slate-500 text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>DevConnect</span>
         </div>
         <p className="text-slate-600 text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-
-          © 2025 DevConnect. Built for developers,Crafted by SHIVANSH DIXIT.
-
+          © 2025 DevConnect. Built for developers, Crafted by SHIVANSH DIXIT.
         </p>
         <div className="flex gap-6 text-slate-600 text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
           {["Privacy", "Terms", "GitHub"].map((l) => (
@@ -906,92 +992,87 @@ function Footer() {
 }
 
 export default function Home() {
-  
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
 
-const { user } = useContext(AuthContext);
-const isLoggedIn = !!user;
-const [showAuthPopup, setShowAuthPopup] = useState(false);
   return (
     <>
-  
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: rgba(147,51,234,0.4); border-radius: 3px; }
       `}</style>
 
-      <div
-        className="min-h-screen relative"
-        style={{ background: "linear-gradient(to bottom right, #0f0c29, #302b63, #24243e)" }}
-      >
+      <div className="min-h-screen relative" style={{ background: "#000000" }}>
+
+
         <StarField />
-        
+
+  
+        <CursorGlow />
+
+      
+        <FloatingParticles />
+
         <Hero />
         <FeedSection />
         <DevelopersSection setShowAuthPopup={setShowAuthPopup} />
         <ChatSection />
         <CTASection />
+
         <AnimatePresence>
-  {showAuthPopup && (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
-    >
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0, y: 40 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.8, opacity: 0 }}
-        transition={{ type: "spring", stiffness: 180, damping: 18 }}
-        className="relative w-full max-w-md overflow-hidden rounded-3xl border border-purple-500/30 bg-slate-900/90 p-8 shadow-2xl"
-      >
-        <div className="absolute -top-20 -left-20 w-40 h-40 bg-purple-600/30 rounded-full blur-3xl" />
-        <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-pink-600/30 rounded-full blur-3xl" />
-
-        <div className="relative z-10 text-center">
-          <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 flex items-center justify-center text-3xl shadow-xl shadow-purple-500/30">
-            🚀
-          </div>
-
-          <h2
-            className="text-3xl font-bold text-white mb-3"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-          >
-            Join DevConnect
-          </h2>
-
-          <p
-            className="text-slate-400 text-sm leading-relaxed mb-8"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-          >
-            Create your developer profile to follow developers,
-            explore profiles, and start networking with the community.
-          </p>
-
-          <div className="flex gap-3">
-            <button
-              onClick={() => setShowAuthPopup(false)}
-              className="flex-1 py-3 rounded-2xl bg-slate-800/70 border border-slate-700/50 text-slate-400 hover:text-white transition-all"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          {showAuthPopup && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
             >
-              Maybe Later
-            </button>
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0, y: 40 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 180, damping: 18 }}
+                className="relative w-full max-w-md overflow-hidden rounded-3xl border border-purple-500/25 bg-black/80 backdrop-blur-xl p-8 shadow-2xl"
+              >
+                <div className="absolute -top-20 -left-20 w-40 h-40 bg-purple-600/25 rounded-full blur-3xl" />
+                <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-pink-600/25 rounded-full blur-3xl" />
+                <div className="relative z-10 text-center">
+                  <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 flex items-center justify-center text-3xl shadow-xl shadow-purple-500/30">
+                    🚀
+                  </div>
+                  <h2 className="text-3xl font-bold text-white mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                    Join DevConnect
+                  </h2>
+                  <p className="text-slate-400 text-sm leading-relaxed mb-8" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                    Create your developer profile to follow developers, explore profiles, and start networking with the community.
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowAuthPopup(false)}
+                      className="flex-1 py-3 rounded-2xl bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all"
+                      style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                    >
+                      Maybe Later
+                    </button>
+                    <button
+                      onClick={() => navigate("/register")}
+                      className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white font-semibold shadow-xl shadow-purple-500/25 hover:shadow-purple-500/40 transition-all"
+                      style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                    >
+                      Register
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-            <button
-              onClick={() => navigate("/register")}
-              className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white font-semibold shadow-xl shadow-purple-500/25 hover:shadow-purple-500/40 transition-all"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-            >
-              Register
-            </button>
-          </div>
-        </div>
-      </motion.div>
-    </motion.div>
-  )}
-</AnimatePresence>
         <Footer />
       </div>
     </>

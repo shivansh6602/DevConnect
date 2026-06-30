@@ -35,7 +35,7 @@ function SweepLine({ visible }) {
   );
 }
 
-// ─── LOGO MARK ────────────────────────────────────────────────────────────────
+
 function NavLogo({ onClick }) {
   return (
     <motion.div
@@ -82,13 +82,12 @@ function NavLogo({ onClick }) {
   );
 }
 
-// ─── NAV LINK ─────────────────────────────────────────────────────────────────
 function NavItem({ to, label }) {
   return (
     <NavLink to={to}>
       {({ isActive }) => (
         <motion.div whileHover={{ y: -1 }} className="relative">
-          {/* active pill — z-[-1] so NEVER covers text */}
+        
           {isActive && (
             <motion.div
               layoutId="nav-active-pill"
